@@ -110,7 +110,7 @@ We will use this working directory and file in the next step.
 Next, we need to specify the path to Isabelle, the working directory, and the working file (theory file). \
 These are used to initialize a working Isabelle instance. This links components 1 and 2.
 
-To do so, specify a `isabelle_checker` field in `configs/config/minif2f_isabelle.json`. \
+To do so, specify a `isabelle_checker` field in `configs/config_minif2f_isabelle.json`. \
 For example (here, the home directory `~` is `/home/seanw`):
 ```json
 {
@@ -135,6 +135,8 @@ cd ~/Portal-to-ISAbelle
 sbt "runMain pisa.server.PisaOneStageServer9000"
 ```
 The port specified in the config (here `"port": 9000`) should match the number that appears in the command (`PisaOneStageServer9000`).
+
+We *leave the server running while running the evaluation* (hence, the separate tmux window).
 
 #### Run the eval!
 Now try running the evaluation. An example script for running the evaluation is in `eval_scripts/eval_minif2f_isabelle_accelerate.sh`.
