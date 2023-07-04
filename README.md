@@ -44,6 +44,14 @@ bash eval_scripts/eval_lila_accelerate.sh
 See `configs/config_math.json` for a non-trivial config file that enables a custom prompt and majority voting.
 
 
+## SPECIAL SETUP: Isabelle Proof Checker
+
+
+**A special setup is _required_ for tasks that use Isabelle proof checking:**
+
+- `miniF2F_isabelle`
+
+**Follow the guide in [docs/isabelle_setup.md](docs/isabelle_setup.md) to set up Isabelle proof checking**. 
 
 
 # New features
