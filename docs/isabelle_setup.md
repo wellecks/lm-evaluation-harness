@@ -9,11 +9,12 @@ Follow this guide to set up Isabelle proof checking.
 
 ## Setup
 
-The evaluation harness supports proof checking via [PISA](https://github.com/albertqjiang/Portal-to-ISAbelle/tree/56def2c39f85d211e1f40cc5765581a567879106).
+The evaluation harness supports proof checking via [PISA](https://github.com/albertqjiang/Portal-to-ISAbelle/tree/56def2c39f85d211e1f40cc5765581a567879106). We implement a client that interacts with PISA (`Checker` in [minif2f_isabelle.py](https://github.com/wellecks/lm-evaluation-harness/blob/minif2f-isabelle/lm_eval/tasks/minif2f_isabelle.py#L154)).
 
 Here are setup steps for a non-dockerized environment. The setup is heavily based on the [PISA readme](https://github.com/albertqjiang/Portal-to-ISAbelle/tree/56def2c39f85d211e1f40cc5765581a567879106)  and [Dockerfile](https://github.com/albertqjiang/Portal-to-ISAbelle/blob/main/docker/Dockerfile). You may need to refer to those if something goes wrong.
 
 ### Installation (PISA and Isabelle)
+First, we need to set up PISA and Isabelle.
 ```bash
 # -- PISA setup
 # Download Portal-to-ISAbelle (PISA)
@@ -37,7 +38,7 @@ sbt assembly
 wget https://isabelle.in.tum.de/dist/Isabelle2022_linux.tar.gz && \
     tar -xzf Isabelle2022_linux.tar.gz
 
-# Install Isabelle (move to WORK_DIR, make an alias).
+# Install Isabelle (i.e., move to WORK_DIR, make an alias).
 export WORK_DIR=~/
 mv Isabelle2022 ${WORK_DIR}/
 echo 'alias isabelle=${WORK_DIR}/Isabelle2022/bin/isabelle' >> ~/.bashrc
@@ -61,7 +62,7 @@ At the end, here's what the setup looks like:
   
     => Group-Ring-Module  HOL-Corec_Examples  HOL-Isar_Examples  ...
     ```
-You can test out the installation-so-far by starting the PISA server:
+You can test out the installation so far by starting a PISA server:
 ```bash
 cd ~/Portal-to-ISAbelle
 sbt "runMain pisa.server.PisaOneStageServer9000"
@@ -73,22 +74,24 @@ The next step is to specify a configuration that allows the Python client to tal
 
 At a high-level, we have three components:
 1. The PISA Scala server
-2. The PISA python client 
-3. Our custom python client, [Checker]()
+2. The PISA python library 
+3. Our python client, [Checker](https://github.com/wellecks/lm-evaluation-harness/blob/minif2f-isabelle/lm_eval/tasks/minif2f_isabelle.py#L154)
 
 We need to set environment variables and configuration so that all three can talk to each other.
 
-#### Set $PISA_PATH
+#### Set PISA_PATH
 
-Set a $PISA_PATH environment variable:
+First, set a `PISA_PATH` environment variable that points to PISA's python directory:
 ```bash
 export PISA_PATH=~/Portal-to-ISAbelle/src/main/python
 ```
-The variable is used to import PISA's python client (`Portal-to-Isabelle/src/main/python/pisa_client.py`) inside of Checker. This links components 2 and 3.
+The variable is used to import PISA's python client (`Portal-to-Isabelle/src/main/python/pisa_client.py`) in Checker. \
+This links components 2 and 3.
 
 
-#### Setup a (fake) working directory and working file
-PISA is initialized by providing a particular working directory and file. We will create a file called `Interactive.thy` and put it in the `HOL/Examples` directory:
+#### Setup a working directory and working file
+PISA is initialized by providing a particular working directory and file. \
+We will create a file called `Interactive.thy` and put it in the `HOL/Examples` directory:
 
 ```bash
 vim ~/Isabelle2022/src/HOL/Examples/Interactive.thy
@@ -100,12 +103,15 @@ begin
 
 end
 ```
+We will use this working directory and file in the next step.
 
 #### Setup a `config.json`
 
-Next, we need to specify the path to Isabelle, the working directory, and the theory file. These are used to initialize a working Isabelle instance. This links components 1 and 2.
+Next, we need to specify the path to Isabelle, the working directory, and the working file (theory file). \
+These are used to initialize a working Isabelle instance. This links components 1 and 2.
 
-To do so, specify a `isabelle_checker` field in `configs/config/minif2f_isabelle.json`. For example (here, the home directory `~` is `/home/seanw`):
+To do so, specify a `isabelle_checker` field in `configs/config/minif2f_isabelle.json`. \
+For example (here, the home directory `~` is `/home/seanw`):
 ```json
 {
     "minif2f_isabelle": {
