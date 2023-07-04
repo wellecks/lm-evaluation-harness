@@ -61,6 +61,7 @@ from . import proofnet
 from . import hendrycks_test_cot
 from . import math_sat_cot
 from . import identify_math_theorems
+from . import minif2f_isabelle
 
 ########################################
 # Translation tasks
@@ -395,6 +396,10 @@ TASK_REGISTRY = {
     # ProofNet
     "proofnet_autoformalize_statements": proofnet.ProofNetAutoformalizeStatements,
     "proofnet_informalize_statements": proofnet.ProofNetInformalizeStatements,
+    # MiniF2F-isabelle
+    "minif2f_isabelle": minif2f_isabelle.MiniF2FIsabelle,
+    "minif2f_isabelle_informal2formal": minif2f_isabelle.MiniF2FIsabelleInformal2Formal,
+    #
     **hendrycks_test_cot.create_all_mcqa_tasks(),
     "math_sat_cot": math_sat_cot.MinervaCoTMMLU,
     "identify_math_theorems": identify_math_theorems.IdentifyMathThms,

@@ -1,0 +1,24 @@
+{
+    "minif2f_isabelle": {
+        "description": "",
+        "params": {
+            "isabelle_checker" : {
+                "isa_path": "/home/seanw/Isabelle2022",
+                "working_dir": "/home/seanw/Isabelle2022/src/HOL/Examples",
+                "theory_file": "/home/seanw/Isabelle2022/src/HOL/Examples/Interactive.thy",
+                "port": 9000
+            }
+        }
+    },
+    "minif2f_isabelle_informal2formal": {
+        "description": "",
+        "params": {
+            "isabelle_checker" : {
+                "isa_path": "/home/seanw/Isabelle2022",
+                "working_dir": "/home/seanw/Isabelle2022/src/HOL/Examples",
+                "theory_file": "/home/seanw/Isabelle2022/src/HOL/Examples/Interactive.thy",
+                "port": 9000
+            }
+        }
+    }
+}
