@@ -24,7 +24,7 @@ git clone https://github.com/albertqjiang/Portal-to-ISAbelle.git
 # Scala installation
 sudo apt-get install zip
 curl -s "https://get.sdkman.io" | bash
-source "/home/seanw/.sdkman/bin/sdkman-init.sh"
+source "~/.sdkman/bin/sdkman-init.sh"
 sdk install java 11.0.11-open
 sdk install sbt
 
