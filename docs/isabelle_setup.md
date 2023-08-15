@@ -128,6 +128,11 @@ For example (here, the home directory `~` is `/home/seanw`):
 }
 ```
 
+#### Install misc. libraries
+```bash
+pip install func_timeout
+```
+
 #### Start the PISA server
 Finally, start a PISA server in a separate tmux window (similar to what was done above in Installation):
 ```bash
