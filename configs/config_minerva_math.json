@@ -1,0 +1,10 @@
+{
+    "minerva_math_algebra_easy": {"description": "", "params": {"majority_voting": 16,"sampling_temperature":0.3,"eval_batch_size":8}},
+    "minerva_math_algebra": {"description": "", "params": {"majority_voting": 16,"sampling_temperature":0.3,"eval_batch_size":8}},
+    "minerva_math_counting_and_prob": {"description": "", "params": {"majority_voting": 16,"sampling_temperature":0.3,"eval_batch_size":8}},
+    "minerva_math_geometry": {"description": "", "params": {"majority_voting": 16,"sampling_temperature":0.3,"eval_batch_size":8}},
+    "minerva_math_intermediate_algebra": {"description": "", "params": {"majority_voting": 16,"sampling_temperature":0.3,"eval_batch_size":8}},
+    "minerva_math_num_theory": {"description": "", "params": {"majority_voting": 16,"sampling_temperature":0.3,"eval_batch_size":8}},
+    "minerva_math_prealgebra": {"description": "", "params": {"majority_voting": 16,"sampling_temperature":0.3,"eval_batch_size":8}},
+    "minerva_math_precalc": {"description": "", "params": {"majority_voting": 16,"sampling_temperature":0.3,"eval_batch_size":8}}
+}
