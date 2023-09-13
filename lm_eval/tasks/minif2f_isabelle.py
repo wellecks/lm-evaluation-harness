@@ -10,6 +10,8 @@ statement and an informal proof as described in Draft, Sketch, Prove [Jiang et a
 
 The evaluation harness supports the following tasks:
 - `minif2f_isabelle`: given a formal statement, generate a formal proof checked by Isabelle.
+- `minif2f_isabelle_informal2formal`: given a formal statement, informal statement, informal proof,
+   generate a formal proof checked by Isabelle.
 
 The generated formal proof can have `sledgehammer` calls as in Draft, Sketch, Prove.
 Proof checking (and calls to sledgehammer or similar automated provers) is handled
