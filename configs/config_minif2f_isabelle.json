@@ -18,7 +18,10 @@
                 "working_dir": "/home/seanw/Isabelle2022/src/HOL/Examples",
                 "theory_file": "/home/seanw/Isabelle2022/src/HOL/Examples/Interactive.thy",
                 "port": 9000
-            }
+            },
+            "majority_voting": 4,
+            "sampling_temperature": 0.5,
+            "eval_batch_size": 8
         }
     }
 }
