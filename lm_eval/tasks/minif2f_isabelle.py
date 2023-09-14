@@ -20,7 +20,7 @@ via Portal-to-Isabelle [Jiang et al 2021].
 Homepage: https://huggingface.co/datasets/wellecks/minif2f_isabelle
 """
 from lm_eval.metrics import mean
-from lm_eval.base import Task, rf
+from lm_eval.tasks.math_tasks import SymbolicMathTask
 
 import os
 import sys
@@ -522,15 +522,28 @@ qed
 """
 
 
-class MiniF2FIsabelle(Task):
+class MiniF2FIsabelle(SymbolicMathTask):
     VERSION = 0
     DATASET_PATH = "wellecks/minif2f_isabelle"
 
     IN_KEY = "formal_statement"
-    STOP = "\n\n\n"
+
+    @property
+    def end_seq(self) -> str:
+        return "\n\n\n"
 
     def has_training_docs(self):
         return False
+
+    def get_unnormalized_answer(self, text: str) -> str:
+        """
+        Arguments:
+            text (str): model sample
+        Returns:
+            out (str | Literal[self.INVALID_ANSWER]): string containing a TeX Expression or
+                `self.INVALID_ANSWER`.
+        """
+        return text
 
     def has_validation_docs(self):
         return True
@@ -542,7 +555,7 @@ class MiniF2FIsabelle(Task):
         if self.has_validation_docs():
             return [
                 x for x in self.dataset["validation"]
-                if ('theorem ' + x['problem_name'] + ':') not in PROMPT
+                if ('theorem ' + x['problem_name'] + ':') not in FORMAL2FORMAL_PROMPT
             ]
 
     def test_docs(self):
@@ -552,6 +565,9 @@ class MiniF2FIsabelle(Task):
     def doc_to_text(self, doc):
         return doc[self.IN_KEY]
 
+    def training_docs(self):
+        pass
+
     def doc_to_target(self, doc):
         # no ground-truth targets available in this task
         target = ""
@@ -560,25 +576,72 @@ class MiniF2FIsabelle(Task):
     def fewshot_context(
         self, doc, num_fewshot, provide_description=None, rnd=None, description=None
     ):
-        ctx = FORMAL2FORMAL_PROMPT + doc[self.IN_KEY]
+        ctx = FORMAL2FORMAL_PROMPT + self.doc_to_text(doc)
         return ctx
 
-    def construct_requests(self, doc, ctx):
-        output = rf.greedy_until(ctx, self.STOP)
-        return output
+    # def process_results(self, doc, results, params={}):
+    #     proof = self._parse_result(results[0])
+    #     checking_result = self._check_proof(doc, proof, params)
+    #     results = {
+    #         "success": float(checking_result['success']),
+    #         "metadata": {
+    #             'proof': proof,
+    #             'statement_and_proof': doc['formal_statement'] + proof,
+    #             'checking_result': checking_result
+    #         }
+    #     }
+    #     return results
 
     def process_results(self, doc, results, params={}):
-        proof = self._parse_result(results[0])
-        checking_result = self._check_proof(doc, proof, params)
+        candidates = results[0]
+
+        assert isinstance(params, dict)
+        proofs = []
+        checking_results = []
+        if self.MAJORITY_VOTING not in params:
+            proof = self._parse_result(candidates)
+            checking_result = self._check_proof(doc, proof, params)
+
+            if checking_result['success']:
+                acc = 1
+            else:
+                acc = 0
+            pass_rate = acc
+            proofs.append(proof)
+            checking_results.append(checking_result)
+        else:
+            checking_results = []
+            import ipdb; ipdb.set_trace(context=20)
+            for candidate in candidates:
+                proof = self._parse_result(candidate)
+                checking_result = self._check_proof(doc, proof, params)
+                proofs.append(proof)
+                checking_results.append(checking_result)
+
+            answers = [1.0 if c['success'] else 0.0 for c in checking_results]
+
+            acc, pass_rate, votes = self.majority_vote(
+                answers,
+                correct_answer=1.0
+            )
+
         results = {
-            "success": float(checking_result['success']),
+            "acc": acc,
+            "pass_rate": pass_rate,
             "metadata": {
-                'proof': proof,
-                'statement_and_proof': doc['formal_statement'] + proof,
-                'checking_result': checking_result
+                'statement': doc['formal_statement'],
+                'proofs': proofs,
+                'checking_results': checking_results
             }
         }
+
         return results
+
+    def aggregation(self):
+        return {"acc": mean, "pass_rate": mean}
+
+    def higher_is_better(self):
+        return {"acc": True, "pass_rate": True}
 
     def _check_proof(self, doc, proof, params):
         # Check the proof
@@ -607,16 +670,6 @@ class MiniF2FIsabelle(Task):
                 'see docs/isabelle_setup.md for instructions.'
             )
 
-    def aggregation(self):
-        return {
-            "success": mean,
-        }
-
-    def higher_is_better(self):
-        return {
-            "success": True,
-        }
-
     def _parse_result(self, result):
         return result
 
@@ -625,6 +678,13 @@ class MiniF2FIsabelleInformal2Formal(MiniF2FIsabelle):
     VERSION = 0
     DATASET_PATH = "wellecks/minif2f_isabelle"
     STOP = "\n\n\n"
+
+    def validation_docs(self):
+        if self.has_validation_docs():
+            return [
+                x for x in self.dataset["validation"]
+                if ('theorem ' + x['problem_name'] + ':') not in INFORMAL2FORMAL_PROMPT
+            ]
 
     def fewshot_context(
         self, doc, num_fewshot, provide_description=None, rnd=None, description=None
