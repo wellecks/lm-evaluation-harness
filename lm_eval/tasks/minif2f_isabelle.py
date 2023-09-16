@@ -269,7 +269,8 @@ qed
 """
 
 
-INFORMAL2FORMAL_PROMPT = """Informal:
+INFORMAL2FORMAL_PROMPTS = {
+    'numbertheory': """Informal:
 (*### Problem
 
 Find the minimum value of $\frac{9x^2\sin^2 x + 4}{x\sin x}$ for $0 < x < \pi$. Show that it is 12.
@@ -302,32 +303,6 @@ proof -
       sledgehammer
   qed
   then show ?thesis
-    sledgehammer
-qed
-
-
-
-Informal:
-(*### Problem
-
-Show that for any four complex numbers a, b, c, and d, $(a-d)(a-c)(a-b) = -(((a^2 - a(b+c)) + bc) * d) + (a^2 - a(b+c) + bc) * a$.
-
-### Solution
-
-We first see that $a^2 = a * a$ trivially.
-Unfolding this, the main equation holds true when terms are rearranged.*)
-
-Formal:
-theorem algebra_3rootspoly_amdtamctambeqnasqmbpctapcbtdpasqmbpctapcbta:
-  fixes a b c d :: complex
-  shows "(a-d) * (a-c) * (a-b) = -(((a^2 - (b+c) * a) + c * b) * d) + (a^2 - (b+c) * a + c * b) * a"
-proof -
-  (* We first see that $a^2 = a * a$ trivially. *)
-  have t0: "a^2 = a * a"
-    using power2_eq_square
-      sledgehammer
-  (* Unfolding this, the main equation holds true when terms are rearranged. *)
-  show ?thesis unfolding t0
     sledgehammer
 qed
 
@@ -490,6 +465,183 @@ qed
 
 
 
+""",
+
+    "other": """Informal:
+(*### Problem
+
+Find the minimum value of $\frac{9x^2\sin^2 x + 4}{x\sin x}$ for $0 < x < \pi$. Show that it is 12.
+
+### Solution
+
+Let $y = x \sin x$. It suffices to show that $12 \leq \frac{9y^2 + 4}{y}.
+It is trivial to see that $y > 0$. 
+Then one can multiply both sides by $y$ and it suffices to show $12y \leq 9y^2 + 4$.
+This can be done by the sum of squares method.*)
+
+Formal:
+theorem aime_1983_p9:
+  fixes x::real
+  assumes "0<x" "x<pi"
+  shows "12 \<le> ((9 * (x^2 * (sin x)^2)) + 4) / (x * sin x)"
+proof -
+  (* Let $y = x \sin x$. *)
+  define y where "y=x * sin x"
+  (* It suffices to show that $12 \leq \frac{9y^2 + 4}{y}. *)
+  have "12 \<le> (9 * y^2 + 4) / y"
+  proof -
+    (* It is trivial to see that $y > 0$. *)
+    have c0: "y > 0"
+      sledgehammer
+    (* Then one can multiply both sides by $y$ and it suffices to show $12y \leq 9y^2 + 4$. *)
+    have "(9 * y^2 + 4) \<ge> 12 * y" 
+      sledgehammer
+    then show ?thesis
+      sledgehammer
+  qed
+  then show ?thesis
+    sledgehammer
+qed
+
+
+
+Informal:
+(*### Problem
+
+Show that for any four complex numbers a, b, c, and d, $(a-d)(a-c)(a-b) = -(((a^2 - a(b+c)) + bc) * d) + (a^2 - a(b+c) + bc) * a$.
+
+### Solution
+
+We first see that $a^2 = a * a$ trivially.
+Unfolding this, the main equation holds true when terms are rearranged.*)
+
+Formal:
+theorem algebra_3rootspoly_amdtamctambeqnasqmbpctapcbtdpasqmbpctapcbta:
+  fixes a b c d :: complex
+  shows "(a-d) * (a-c) * (a-b) = -(((a^2 - (b+c) * a) + c * b) * d) + (a^2 - (b+c) * a + c * b) * a"
+proof -
+  (* We first see that $a^2 = a * a$ trivially. *)
+  have t0: "a^2 = a * a"
+    using power2_eq_square
+      sledgehammer
+  (* Unfolding this, the main equation holds true when terms are rearranged. *)
+  show ?thesis unfolding t0
+    sledgehammer
+qed
+
+
+
+Informal:
+(*### Problem
+
+Find the greatest common factor of 180 and 168. Show that it is 12.
+
+### Solution
+
+This is true by simple evaluation.*)
+
+Formal:
+theorem mathd_numbertheory_188:
+  "gcd 180 168 = (12::nat)"
+  sledgehammer
+
+
+
+Informal:
+(*### Problem
+
+For how many positive integers $n$ is $n^2 - 3n + 2$ a [[prime]] number?
+
+$\mathrm{(A)}\ \text{none}
+\qquad\mathrm{(B)}\ \text{one}
+\qquad\mathrm{(C)}\ \text{two}
+\qquad\mathrm{(D)}\ \text{more\ than\ two,\ but\ finitely\ many}
+\qquad\mathrm{(E)}\ \text{infinitely\ many}$ Show that it is \mathrm{(B)}\ \text{one}.
+
+### Solution
+
+Factoring, we get $n^2 - 3n + 2 = (n-2)(n-1)$. 
+Either $n-1$ or $n-2$ is odd, and the other is even.  
+Their product must yield an even number.  
+The only prime that is even is $2$, which is when $n$ is $3$ or $0$. 
+Since $0$ is not a positive number, the answer is $\mathrm{(B)}\ \text{one}$.*)
+
+Formal:
+theorem amc12b_2002_p3:
+  fixes n ::nat
+  assumes "n>0"
+    and prime:"prime (n^2+2-3*n)"
+  shows "n=3"
+proof -
+  have "n>2" 
+  proof (rule ccontr)
+    assume "\<not> 2 < n"
+    then have "n=1 \<or> n=2" using \<open>n>0\<close> sledgehammer
+    then show False using prime[THEN prime_gt_1_nat]
+      sledgehammer
+  qed
+  (* Factoring, we get $n^2 - 3n + 2 = (n-2)(n-1)$. *)
+  then have "n^2+2-3*n  = (n-1) * (n-2)"
+    unfolding power2_eq_square
+    sledgehammer
+  (* Either $n-1$ or $n-2$ is odd, and the other is even.  
+  Their product must yield an even number.  
+  The only prime that is even is $2$, which is when $n$ is $3$ or $0$. 
+  Since $0$ is not a positive number, the answer is $\mathrm{(B)}\ \text{one}$.*)
+  then have "prime ((n-1) * (n-2))"
+    using prime sledgehammer
+  then have "n-1=1 \<or> n-2 = 1"
+    using prime_product sledgehammer
+  with \<open>n>2\<close>
+  show "n=3" sledgehammer
+qed
+
+
+
+Informal:
+(*### Problem
+
+For a positive real number a, show that $10a\leq 28a^2+1$.
+
+### Solution
+
+It suffices to show $0\leq 28a^2 - 10a + 1$.
+First, consider completing the square for $28a^2 - 10a$ and observe that $(a - \frac{5}{28})^2 = a^2 - \frac{10}{28}a + (5/28)^2$.
+Since $0\leq (a - \frac{5}{28})^2$, we have $0\leq a^2 - \frac{10}{28}a + (5/28)^2$.
+Multiplying by 28 and simplifying terms gives $0\leq 28*a^2 - 10*a + (25/28)$.
+Since $25/28 < 1$, the result follows.*)
+
+Formal:
+theorem algebra_binomnegdiscrineq_10alt28asqp1:
+  fixes a :: real
+  shows "10 * a \<le> 28 * a^2 + 1"
+proof -
+(* it suffices to show $0\leq 28a^2 - 10a + 1$ *)
+  have c0: "0 \<le> 28*a^2 - 10*a + 1"
+  proof -
+    (* observe that $(a - \frac{5}{28})^2 = a^2 - \frac{10}{28}a + (5/28)^2$ *)
+    have c1: "(a - (5/28))^2 = a^2 - 10/28*a + (5/28)^2"
+      sledgehammer
+    (* we have $0\leq a^2 - \frac{10}{28}a + (5/28)^2$ *)
+    then have c2: "0 \<le> a^2 - 10/28*a + (5/28)^2" using c1
+      sledgehammer
+    (* Multiplying by 28 and simplifying terms gives $0\leq 28*a^2 - 10*a + (25/28)$ *)
+    then have c3: "0 \<le> 28*a^2 - 10*a + 28*((5/28)^2)" using c2
+      sledgehammer
+    then have c4: "0 \<le> 28*a^2 - 10*a + 28*((5/28)*(5/28))" using c3
+      sledgehammer
+    then have c5: "0 \<le> 28*a^2 - 10*a + (25/28)" using c4
+      sledgehammer
+    (* Since $25/28 < 1$, the result follows. *)
+    then show ?thesis using c5
+      sledgehammer
+  qed
+  then show ?thesis
+    sledgehammer
+qed
+
+
+
 Informal:
 (*### Problem
 
@@ -520,6 +672,7 @@ qed
 
 
 """
+}
 
 
 class MiniF2FIsabelle(SymbolicMathTask):
@@ -579,19 +732,6 @@ class MiniF2FIsabelle(SymbolicMathTask):
         ctx = FORMAL2FORMAL_PROMPT + self.doc_to_text(doc)
         return ctx
 
-    # def process_results(self, doc, results, params={}):
-    #     proof = self._parse_result(results[0])
-    #     checking_result = self._check_proof(doc, proof, params)
-    #     results = {
-    #         "success": float(checking_result['success']),
-    #         "metadata": {
-    #             'proof': proof,
-    #             'statement_and_proof': doc['formal_statement'] + proof,
-    #             'checking_result': checking_result
-    #         }
-    #     }
-    #     return results
-
     def process_results(self, doc, results, params={}):
         candidates = results[0]
 
@@ -599,7 +739,8 @@ class MiniF2FIsabelle(SymbolicMathTask):
         proofs = []
         checking_results = []
         if self.MAJORITY_VOTING not in params:
-            proof = self._parse_result(candidates)
+            candidate = candidates
+            proof = self._parse_result(candidate)
             checking_result = self._check_proof(doc, proof, params)
 
             if checking_result['success']:
@@ -611,12 +752,14 @@ class MiniF2FIsabelle(SymbolicMathTask):
             checking_results.append(checking_result)
         else:
             checking_results = []
-            import ipdb; ipdb.set_trace(context=20)
             for candidate in candidates:
                 proof = self._parse_result(candidate)
                 checking_result = self._check_proof(doc, proof, params)
                 proofs.append(proof)
                 checking_results.append(checking_result)
+                if checking_result['success']:
+                    print("=== Success!")
+                    print(doc['formal_statement'] + '\n' + proof)
 
             answers = [1.0 if c['success'] else 0.0 for c in checking_results]
 
@@ -624,7 +767,6 @@ class MiniF2FIsabelle(SymbolicMathTask):
                 answers,
                 correct_answer=1.0
             )
-
         results = {
             "acc": acc,
             "pass_rate": pass_rate,
@@ -683,13 +825,18 @@ class MiniF2FIsabelleInformal2Formal(MiniF2FIsabelle):
         if self.has_validation_docs():
             return [
                 x for x in self.dataset["validation"]
-                if ('theorem ' + x['problem_name'] + ':') not in INFORMAL2FORMAL_PROMPT
+                if ('theorem ' + x['problem_name'] + ':') not in INFORMAL2FORMAL_PROMPTS['numbertheory'] and
+                   ('theorem ' + x['problem_name'] + ':') not in INFORMAL2FORMAL_PROMPTS['other']
             ]
 
     def fewshot_context(
         self, doc, num_fewshot, provide_description=None, rnd=None, description=None
     ):
-        ctx = (INFORMAL2FORMAL_PROMPT +
+        if 'numbertheory' in doc['formal_statement']:
+            prompt = INFORMAL2FORMAL_PROMPTS['numbertheory']
+        else:
+            prompt = INFORMAL2FORMAL_PROMPTS['other']
+        ctx = (prompt +
                'Informal:\n(*### Problem\n\n' + doc['informal_statement'] + '\n\n' +
                '### Solution\n\n' + doc['informal_proof'] + ' *)' +
                '\n\nFormal:\n' + doc['formal_statement'])
@@ -857,6 +1004,5 @@ class Checker(object):
         steps = [s for s in steps if s != '$' and s.strip() != '']
         steps = [s.replace('sorry', 'normalhammer') for s in steps]
         return steps
-
 
 
