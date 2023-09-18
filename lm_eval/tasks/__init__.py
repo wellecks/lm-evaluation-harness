@@ -399,6 +399,7 @@ TASK_REGISTRY = {
     # MiniF2F-isabelle
     "minif2f_isabelle": minif2f_isabelle.MiniF2FIsabelle,
     "minif2f_isabelle_informal2formal": minif2f_isabelle.MiniF2FIsabelleInformal2Formal,
+    "minif2f_isabelle_statement2formal": minif2f_isabelle.MiniF2FIsabelleStatement2Formal,
     #
     **hendrycks_test_cot.create_all_mcqa_tasks(),
     "math_sat_cot": math_sat_cot.MinervaCoTMMLU,
