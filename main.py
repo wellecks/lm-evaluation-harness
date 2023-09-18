@@ -48,6 +48,11 @@ def parse_args():
     parser.add_argument("--accelerate_dtype", type=str, default=None)
     parser.add_argument("--tp_degree", type=int, default=1)
 
+    parser.add_argument("--dtype", type=str, default="auto")
+    parser.add_argument("--max_length", type=int, default=4096)
+    parser.add_argument("--max_gen_toks", type=int, default=1024)
+    parser.add_argument("--vllm_max_num_batched_tokens", type=int, default=4096)
+
     return parser.parse_args()
 
 

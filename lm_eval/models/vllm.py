@@ -13,7 +13,7 @@ class VLLM(BaseLM):
     AUTO_CONFIG_CLASS: transformers.AutoConfig = transformers.AutoConfig
     AUTO_MODEL_CLASS = transformers.AutoModelForCausalLM
     AUTO_TOKENIZER_CLASS: transformers.AutoTokenizer = transformers.AutoTokenizer
-    _DEFAULT_MAX_LENGTH: int = 2048
+    _DEFAULT_MAX_LENGTH: int = 4096
 
     def __init__(
         self,
@@ -27,6 +27,7 @@ class VLLM(BaseLM):
         trust_remote_code: Optional[bool] = False,
         tensor_parallel_size: Optional[int] = 1,
         dtype: Optional[Union[str, torch.dtype]] = 'bfloat16',
+        max_num_batched_tokens: Optional[int] = 4096
     ):
         super().__init__()
         self._max_gen_toks = max_gen_toks
@@ -41,7 +42,8 @@ class VLLM(BaseLM):
         )
         self.llm = LLM(model=pretrained, 
                        tensor_parallel_size=tensor_parallel_size,
-                       dtype=dtype)
+                       dtype=dtype,
+                       max_num_batched_tokens=max_num_batched_tokens)
         self.tokenizer = self._create_auto_tokenizer(
             pretrained=pretrained,
             revision=revision,
@@ -95,15 +97,15 @@ class VLLM(BaseLM):
         bsz = len(input_ids)
 
         output_texts = []
-        sampling_params = SamplingParams(max_tokens=max_tokens, 
-                                         temperature=temperature, 
+        sampling_params = SamplingParams(max_tokens=max_tokens,
+                                         temperature=temperature,
                                          top_p=top_p,
-                                         stop=stop, 
+                                         stop=stop,
                                          n=num_return_sequences)
-        outputs = self.llm.generate(prompts=contexts, 
+        outputs = self.llm.generate(prompts=contexts,
                                     sampling_params=sampling_params,
                                     use_tqdm=bsz > 1)
-        
+
         # Sort by request_id
         outputs = sorted(outputs, key=lambda x: int(x.request_id))
         for output in outputs:
