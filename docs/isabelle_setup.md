@@ -35,7 +35,7 @@ sbt assembly
 
 # -- Isabelle setup
 # Download Isabelle
-wget https://isabelle.in.tum.de/dist/Isabelle2022_linux.tar.gz && \
+wget https://isabelle.in.tum.de/website-Isabelle2022/dist/Isabelle2022_linux.tar.gz && \
     tar -xzf Isabelle2022_linux.tar.gz
 
 # Install Isabelle (i.e., move to WORK_DIR, make an alias).
