@@ -1,4 +1,4 @@
-BASE_DIR="./"
+BASE_DIR="."
 OUTPUT_DIR="./output/minif2f_isabelle"
 mkdir -p ${OUTPUT_DIR}
 

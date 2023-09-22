@@ -483,7 +483,7 @@ class MiniF2FIsabelle(SymbolicMathTask):
         return True
 
     def has_test_docs(self):
-        return False
+        return True
 
     def validation_docs(self):
         if self.has_validation_docs():
