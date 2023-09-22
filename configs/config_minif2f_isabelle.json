@@ -1,18 +1,4 @@
 {
-    "minif2f_isabelle": {
-        "description": "",
-        "params": {
-            "isabelle_checker" : {
-                "isa_path": "/home/seanw/Isabelle2022",
-                "working_dir": "/home/seanw/Isabelle2022/src/HOL/Examples",
-                "theory_file": "/home/seanw/Isabelle2022/src/HOL/Examples/Interactive.thy",
-                "port": 9000
-            },
-            "majority_voting": 1,
-            "sampling_temperature": 0.0,
-            "eval_batch_size": 1
-        }
-    },
     "minif2f_isabelle_informal2formal": {
         "description": "",
         "params": {
@@ -22,21 +8,6 @@
                 "theory_file": "/home/seanw/Isabelle2022/src/HOL/Examples/Interactive.thy",
                 "port": 9000
             },
-            "majority_voting": 1,
-            "sampling_temperature": 0.0,
-            "eval_batch_size": 1
-        }
-    },
-    "minif2f_isabelle_statement2formal": {
-        "description": "",
-        "params": {
-            "isabelle_checker" : {
-                "isa_path": "/home/seanw/Isabelle2022",
-                "working_dir": "/home/seanw/Isabelle2022/src/HOL/Examples",
-                "theory_file": "/home/seanw/Isabelle2022/src/HOL/Examples/Interactive.thy",
-                "port": 9000
-            },
-            "majority_voting": 1,
             "sampling_temperature": 0.0,
             "eval_batch_size": 1
         }

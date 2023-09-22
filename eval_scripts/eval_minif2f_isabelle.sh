@@ -8,7 +8,7 @@ NAME="codellama_CodeLlama-7b-hf"
 FEWSHOT=0
 BATCH_SIZE=1
 
-TASKS="minif2f_isabelle_informal2formal,minif2f_isabelle_statement2formal"
+TASKS="minif2f_isabelle_informal2formal"
 
 python ${BASE_DIR}/main.py --description_dict_path ${BASE_DIR}/configs/config_minif2f_isabelle.json \
 	--model_args pretrained=${MODEL} \
