@@ -24,4 +24,4 @@ MODEL="EleutherAI/pythia-1.4b"
 OUT=${HARNESS_DIR}/output/pythia-1.4b_majk.json
 
 python main.py --no_cache --model vllm --model_args pretrained=${MODEL} --tasks $TASKS \
-    --output_path ${OUT} --tp_degree 1 --description_dict_path ${CONFIG}
+    --output_path ${OUT} --tp_degree 1 --description_dict_path ${CONFIG} --num_fewshot 5
