@@ -78,7 +78,7 @@ sbt "runMain pisa.server.PisaOneStageServer9000"
 ```
 The number at the end (here, 9000) specifies the server's port.
 
-Next, start a separate tmux window. In this window, we will set configure the Python client to communicate with the server, then run the `unsafe_score_minif2f_isabelle.py` script.
+Next, start a separate tmux window. In this window, we will configure the Python client to communicate with the server, then run the `unsafe_score_minif2f_isabelle.py` script.
 ### Configuration
 
 
