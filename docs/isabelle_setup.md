@@ -1,15 +1,18 @@
 # Special Setup: Isabelle Proof Checker 
 
 
-**A special setup is _required_ for tasks that use Isabelle proof checking:**
+**A special setup is required for evaluating tasks that use Isabelle proof checking:**
 
-- `miniF2F_isabelle`
 
-Follow this guide to set up Isabelle proof checking.
+Below, we assume that you have run the evaluation harness on the `miniF2F_isabelle_informal2formal` task.
+
+The task produces an output JSON file containing the generated proofs, e.g. `output/minif2f_isabelle/codellama_CodeLlama-7b-hf.json`).
+
+We will now set up proof checking in order to run `unsafe_score_minif2f_isabelle.py`, which evaluates the proofs. 
 
 ## Setup
 
-The evaluation harness supports proof checking via [PISA](https://github.com/albertqjiang/Portal-to-ISAbelle/tree/56def2c39f85d211e1f40cc5765581a567879106). We implement a client that interacts with PISA (`Checker` in [minif2f_isabelle.py](https://github.com/wellecks/lm-evaluation-harness/blob/minif2f-isabelle/lm_eval/tasks/minif2f_isabelle.py#L154)).
+The `unsafe_score_minif2f_isabelle.py` script supports proof checking via [PISA](https://github.com/albertqjiang/Portal-to-ISAbelle/tree/56def2c39f85d211e1f40cc5765581a567879106). We implement a client that interacts with PISA (`Checker` in script).
 
 Here are setup steps for a non-dockerized environment. The setup is heavily based on the [PISA readme](https://github.com/albertqjiang/Portal-to-ISAbelle/tree/56def2c39f85d211e1f40cc5765581a567879106)  and [Dockerfile](https://github.com/albertqjiang/Portal-to-ISAbelle/blob/main/docker/Dockerfile). You may need to refer to those if something goes wrong.
 
@@ -18,8 +21,11 @@ First, we need to set up PISA and Isabelle.
 ```bash
 # -- PISA setup
 # Download Portal-to-ISAbelle (PISA)
+# This version includes an extended timeout:
 cd ~/
-git clone https://github.com/albertqjiang/Portal-to-ISAbelle.git
+git clone https://github.com/wellecks/Portal-to-ISAbelle
+cd Portal-to-ISAbelle
+git checkout aa5a06d217af4b04f4ae573836b52572da0858f6
 
 # Scala installation
 sudo apt-get install zip
@@ -62,22 +68,25 @@ At the end, here's what the setup looks like:
   
     => Group-Ring-Module  HOL-Corec_Examples  HOL-Isar_Examples  ...
     ```
-You can test out the installation so far by starting a PISA server:
+  
+
+### Start a PISA server
+Now start a PISA server:
 ```bash
 cd ~/Portal-to-ISAbelle
 sbt "runMain pisa.server.PisaOneStageServer9000"
 ```
+The number at the end (here, 9000) specifies the server's port.
 
-The next step is to specify a configuration that allows the Python client to talk to the Scala PISA server, as described below.
-
+Next, start a separate tmux window. In this window, we will set configure the Python client to communicate with the server, then run the `unsafe_score_minif2f_isabelle.py` script.
 ### Configuration
+
 
 At a high-level, we have three components:
 1. The PISA Scala server
 2. The PISA python library 
-3. Our python client, [Checker](https://github.com/wellecks/lm-evaluation-harness/blob/minif2f-isabelle/lm_eval/tasks/minif2f_isabelle.py#L154)
+3. Our python client, Checker.
 
-We need to set environment variables and configuration so that all three can talk to each other.
 
 #### Set PISA_PATH
 
@@ -103,45 +112,23 @@ begin
 
 end
 ```
-We will use this working directory and file in the next step.
 
-#### Setup a `config.json`
-
-Next, we need to specify the path to Isabelle, the working directory, and the working file (theory file). \
-These are used to initialize a working Isabelle instance. This links components 1 and 2.
-
-To do so, specify a `isabelle_checker` field in `configs/config_minif2f_isabelle.json`. \
-For example (here, the home directory `~` is `/home/seanw`):
-```json
-{
-    "minif2f_isabelle": {
-        "description": "...prompt...",
-        "params": {
-            "isabelle_checker" : {
-                "isa_path": "/home/seanw/Isabelle2022",
-                "working_dir": "/home/seanw/Isabelle2022/src/HOL/Examples",
-                "theory_file": "/home/seanw/Isabelle2022/src/HOL/Examples/Interactive.thy",
-                "port": 9000
-            }
-        }
-    }
-}
-```
+### Run the evaluation:
 
 #### Install misc. libraries
 ```bash
 pip install func_timeout
 ```
 
-#### Start the PISA server
-Finally, start a PISA server in a separate tmux window (similar to what was done above in Installation):
+#### Run the script:
+As command line arguments we pass the path to Isabelle, the working directory described above, the theory file described above, the port of the running PISA server, and our output JSON file:
 ```bash
-cd ~/Portal-to-ISAbelle
-sbt "runMain pisa.server.PisaOneStageServer9000"
+python unsafe_score_minif2f_isabelle.py \
+  --isa-path /home/seanw/Isabelle2022 \
+  --theory-file /home/seanw/Isabelle2022/src/HOL/Examples/Interactive.thy \
+  --working-dir /home/seanw/Isabelle2022/src/HOL/Examples \
+  --port 9000 \
+  --output output/minif2f_isabelle/codellama_CodeLlama-7b-hf.json
 ```
-The port specified in the config (here `"port": 9000`) should match the number that appears in the command (`PisaOneStageServer9000`).
+Naturally, you will need to set these arguments to your own file paths.
 
-We *leave the server running while running the evaluation* (hence, the separate tmux window).
-
-#### Run the eval!
-Now try running the evaluation. An example script for running the evaluation is in `eval_scripts/eval_minif2f_isabelle_accelerate.sh`.
