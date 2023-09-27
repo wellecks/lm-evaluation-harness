@@ -38,6 +38,7 @@ setuptools.setup(
         "zstandard",
         "accelerate",
         "timeout_decorator",
+        "vllm==0.1.7"
     ],
     extras_require={
         "dev": ["black", "flake8", "pre-commit", "pytest", "pytest-cov"],
