@@ -1,7 +1,7 @@
 # Special Setup: Isabelle Proof Checker 
 
 
-**A special setup is required for evaluating tasks that use Isabelle proof checking:**
+**A special setup is required for evaluating the `miniF2F_isabelle_informal2formal` task.**
 
 
 Below, we assume that you have run the evaluation harness on the `miniF2F_isabelle_informal2formal` task.
@@ -124,9 +124,9 @@ pip install func_timeout
 As command line arguments we pass the path to Isabelle, the working directory described above, the theory file described above, the port of the running PISA server, and our output JSON file:
 ```bash
 python unsafe_score_minif2f_isabelle.py \
-  --isa-path /home/seanw/Isabelle2022 \
-  --theory-file /home/seanw/Isabelle2022/src/HOL/Examples/Interactive.thy \
-  --working-dir /home/seanw/Isabelle2022/src/HOL/Examples \
+  --isa-path /home/username/Isabelle2022 \
+  --theory-file /home/username/Isabelle2022/src/HOL/Examples/Interactive.thy \
+  --working-dir /home/username/Isabelle2022/src/HOL/Examples \
   --port 9000 \
   --output output/minif2f_isabelle/codellama_CodeLlama-7b-hf.json
 ```
