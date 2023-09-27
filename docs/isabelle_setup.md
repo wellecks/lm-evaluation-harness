@@ -1,7 +1,7 @@
 # Special Setup: Isabelle Proof Checker 
 
 
-**A special setup is required for evaluating tasks that use Isabelle proof checking:**
+**A special setup is required for evaluating the `miniF2F_isabelle_informal2formal` task.**
 
 
 Below, we assume that you have run the evaluation harness on the `miniF2F_isabelle_informal2formal` task.
@@ -78,7 +78,7 @@ sbt "runMain pisa.server.PisaOneStageServer9000"
 ```
 The number at the end (here, 9000) specifies the server's port.
 
-Next, start a separate tmux window. In this window, we will set configure the Python client to communicate with the server, then run the `unsafe_score_minif2f_isabelle.py` script.
+Next, start a separate tmux window. In this window, we will configure the Python client to communicate with the server, then run the `unsafe_score_minif2f_isabelle.py` script.
 ### Configuration
 
 
@@ -124,9 +124,9 @@ pip install func_timeout
 As command line arguments we pass the path to Isabelle, the working directory described above, the theory file described above, the port of the running PISA server, and our output JSON file:
 ```bash
 python unsafe_score_minif2f_isabelle.py \
-  --isa-path /home/seanw/Isabelle2022 \
-  --theory-file /home/seanw/Isabelle2022/src/HOL/Examples/Interactive.thy \
-  --working-dir /home/seanw/Isabelle2022/src/HOL/Examples \
+  --isa-path /home/username/Isabelle2022 \
+  --theory-file /home/username/Isabelle2022/src/HOL/Examples/Interactive.thy \
+  --working-dir /home/username/Isabelle2022/src/HOL/Examples \
   --port 9000 \
   --output output/minif2f_isabelle/codellama_CodeLlama-7b-hf.json
 ```
