@@ -460,7 +460,6 @@ class MiniF2FIsabelle(SymbolicMathTask):
     DATASET_PATH = "wellecks/minif2f_isabelle"
 
     IN_KEY = "formal_statement"
-    STOP = "\n\n\n"
 
     @property
     def end_seq(self) -> str:
@@ -470,13 +469,6 @@ class MiniF2FIsabelle(SymbolicMathTask):
         return False
 
     def get_unnormalized_answer(self, text: str) -> str:
-        """
-        Arguments:
-            text (str): model sample
-        Returns:
-            out (str | Literal[self.INVALID_ANSWER]): string containing a TeX Expression or
-                `self.INVALID_ANSWER`.
-        """
         return text
 
     def has_validation_docs(self):
@@ -497,16 +489,13 @@ class MiniF2FIsabelle(SymbolicMathTask):
         if self.has_test_docs():
             return [x for x in self.dataset["test"]]
 
-    def doc_to_text(self, doc):
-        return doc[self.IN_KEY]
-
     def training_docs(self):
-        pass
+        return []
 
-    def doc_to_target(self, doc):
-        # no ground-truth targets available in this task
-        target = ""
-        return target
+    def _doc_to_text(self, doc):
+        return ('Informal:\n(*### Problem\n\n' + doc['informal_statement'] + '\n\n' +
+                '### Solution\n\n' + doc['informal_proof'] + ' *)' +
+                '\n\nFormal:\n' + doc['formal_statement'])
 
     def fewshot_context(
         self, doc, num_fewshot, provide_description=None, rnd=None, description=None
@@ -515,246 +504,31 @@ class MiniF2FIsabelle(SymbolicMathTask):
             prompt = INFORMAL2FORMAL_PROMPTS['numbertheory']
         else:
             prompt = INFORMAL2FORMAL_PROMPTS['other']
-        ctx = (prompt +
-               'Informal:\n(*### Problem\n\n' + doc['informal_statement'] + '\n\n' +
-               '### Solution\n\n' + doc['informal_proof'] + ' *)' +
-               '\n\nFormal:\n' + doc['formal_statement'])
+        ctx = prompt + self._doc_to_text(doc)
         return ctx
 
     def process_results(self, doc, results, params={}):
         candidates = results[0]
 
-        assert isinstance(params, dict)
-        proofs = []
-        checking_results = []
-        if self.MAJORITY_VOTING not in params or params[self.MAJORITY_VOTING] == 1:
-            candidate = candidates
-            proof = self.parse_result(candidate)
-            checking_result = self._check_proof(doc, proof, params)
-
-            if checking_result['success']:
-                acc = 1
-            else:
-                acc = 0
-            pass_rate = acc
-            proofs.append(proof)
-            checking_results.append(checking_result)
+        assert isinstance(candidates, str) or isinstance(candidates, list)
+        if isinstance(candidates, str):
+            proofs = [candidates]
         else:
-            checking_results = []
-            for candidate in candidates:
-                proof = self.parse_result(candidate)
-                checking_result = self._check_proof(doc, proof, params)
-                proofs.append(proof)
-                checking_results.append(checking_result)
+            proofs = candidates
 
-            answers = [1.0 if c['success'] else 0.0 for c in checking_results]
-
-            acc, pass_rate, votes = self.majority_vote(
-                answers,
-                correct_answer=1.0
-            )
         results = {
-            "acc": acc,
-            "pass_rate": pass_rate,
+            "generated": 1.0,
             "metadata": {
-                'statement': doc['formal_statement'],
+                'doc': doc,
                 'proofs': proofs,
-                'checking_results': checking_results
             }
         }
 
         return results
 
     def aggregation(self):
-        return {"acc": mean, "pass_rate": mean}
+        return {"generated": mean}
 
     def higher_is_better(self):
-        return {"acc": True, "pass_rate": True}
-
-    def _check_proof(self, doc, proof, params):
-        # Check the proof
-        self._validate_params(params)
-        settings = params['isabelle_checker']
-        checker = Checker(
-            working_dir=settings['working_dir'],
-            isa_path=settings['isa_path'],
-            theory_file=settings['theory_file'],
-            port=settings['port']
-        )
-        formal_statement = doc['formal_statement']
-        theorem_with_proof = f"{formal_statement}\n{proof}"
-        result = checker.check(theorem_with_proof)
-        if result['success']:
-            print("==== SUCCESS!!")
-            print(theorem_with_proof)
-        return result
-
-    def _validate_params(self, params):
-        if ('isabelle_checker' not in params or
-             any([field not in params['isabelle_checker']
-                  for field in ['working_dir', 'isa_path', 'theory_file', 'port']])):
-            raise ValueError(
-                'The "isabelle_checker" config field needs to be specified; '
-                'see docs/isabelle_setup.md for instructions.'
-            )
-
-    def parse_result(self, result):
-        return result
-
-
-class Checker(object):
-    """A modified version of the Draft, Sketch, Prove proof-checking client.
-    (https://github.com/albertqjiang/draft_sketch_prove/blob/main/autoformalization/checker.py)
-
-    This checker supports Isabelle2022 via PISA
-    (https://albertqjiang.github.io/Portal-to-ISAbelle/).
-
-    It supports checking a miniF2F-style proof via `check`.
-
-    Finally, it replaces `sledgehammer` with a call to `normalhammer`.
-    """
-    def __init__(self, working_dir, isa_path, theory_file, port=9000):
-        sys.path.append(os.environ['PISA_PATH'])
-        try:
-            from pisa_client import initialise_env
-            self.initialise_env = initialise_env
-        except:
-            print("Set $PISA_PATH to /yourpath/to/Portal-to-ISAbelle/src/main/python")
-
-        self.working_dir = working_dir
-        self.isa_path = isa_path
-        self.theory_file = theory_file
-        self.port = port
-
-    def _initialize(self):
-        env = self.initialise_env(
-            self.port,
-            isa_path=self.isa_path,
-            theory_file_path=self.theory_file,
-            working_directory=self.working_dir
-        )
-        return env
-
-    def _exit(self, env):
-        try:
-            env.post('exit')
-        except:
-            print("env.post('exit') timed out")
-            pass
-        os.system("ps aux | grep Isabelle | awk '{print $2}' | xargs kill -9 > /dev/null 2>&1")
-        os.system("ps aux | grep poly | awk '{print $2}' | xargs kill -9 > /dev/null 2>&1")
-
-    def _parse_output(self, obs):
-        """Parse the sledgehammer output, otherwise return an empty string"""
-        if '<hammer>' in obs:
-            output = obs.split('<hammer>')[0]
-        else:
-            output = ''
-        return output
-
-    def _run_step(self, step, i, tls_name, env):
-        obs, reward, done, metadata = env.step_to_top_level_state(
-            action=step,
-            tls_name=tls_name,
-            new_name='default_%d' % i
-        )
-        error = None
-        if 'error:' in obs or 'Step error' in obs or 'Unknown error' in obs:
-            error = obs
-        return obs, reward, done, metadata, error
-
-    def _run_sledgehammer(self, step, i, tls_name, env):
-        # First try heuristics
-        for heuristic in [
-            'by auto', 'by simp', 'by blast', 'by fastforce',
-            'by force', 'by eval', 'by presburger', 'by sos',
-            'by arith', 'by linarith', 'by (auto simp: field_simps)'
-        ]:
-            step_ = step.replace('normalhammer', heuristic)
-            obs, reward, done, metadata, error = self._run_step(step_, i, tls_name, env)
-            if error is None:
-                obs = '%s <hammer> %s' % (heuristic, obs)
-                return obs, reward, done, metadata, error
-        # Try sledgehammer
-        out = self._run_step(step, i, tls_name, env)
-        return out
-
-    def check(self, statement_and_proof):
-        # Initialize environment
-        env = self._initialize()
-        env.initialise()
-
-        # Wrap and parse theorem
-        theory = Checker.wrap_theorem(statement_and_proof)
-        steps = Checker.get_parsed(env, theory)
-
-        result = self._check(env, steps)
-        return result
-
-    def _check(self, env, steps):
-        done = False
-        reason = ''
-        success = False
-        step_results = []
-        tls_name = 'default'
-        for i, step in enumerate(steps):
-            try:
-                time0 = time.time()
-                if 'normalhammer' in step:
-                    obs, reward, done, metadata, error = self._run_sledgehammer(step, i, tls_name, env)
-                else:
-                    obs, reward, done, metadata, error = self._run_step(step, i, tls_name, env)
-                step_time = time.time() - time0
-                step_results.append(dict(
-                    index=i, step=step, output=self._parse_output(obs), step_time=step_time
-                ))
-                if error is not None:
-                    reason = error
-                    success = False
-                    done = False
-                    break
-            except:
-                # Timeout - end the proof attempt
-                success = False
-                done = False
-                reason = 'timeout (%d)' % len(step_results)
-                step_results.append(dict(index=i, step=step, output=''))
-                break
-
-            # Change when successful
-            tls_name = 'default_%d' % i
-
-        if done and reward == 1.0:
-            success = True
-
-        result = {
-            'success': success,
-            'reason': reason,
-            'num_steps': len(steps),
-            'last_step': len(step_results),
-            'step_results': step_results
-        }
-        # Exit environment
-        self._exit(env)
-        return result
-
-    @staticmethod
-    def wrap_theorem(theorem):
-        return 'theory Interactive imports HOL.HOL Complex_Main "HOL-Library.Code_Target_Numeral" "HOL-Library.Sum_of_Squares" "Symmetric_Polynomials.Vieta" "HOL-Computational_Algebra.Computational_Algebra" "HOL-Number_Theory.Number_Theory" \n begin\n%s' % theorem
-
-    @staticmethod
-    def get_parsed(env, theory, tls_name='default'):
-        # The parsing doesn't work well with `normalhammer`, so we replace
-        # all hammer calls with sorry, then replace sorry to normalhammer after parsing.
-        theory = theory.replace('sledgehammer', 'sorry')
-        theory = theory.replace('normalhammer', 'sorry')
-
-        steps = env.post(f"<parse text> ${theory}")
-        steps = steps.split('<SEP>')
-        steps = [s for s in steps if s.strip() != '']
-        # remove '$' step and whitespace steps
-        steps = [s for s in steps if s != '$' and s.strip() != '']
-        steps = [s.replace('sorry', 'normalhammer') for s in steps]
-        return steps
-
+        return {"generated": True}
 
