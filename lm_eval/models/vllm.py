@@ -27,7 +27,7 @@ class VLLM(BaseLM):
         max_length: Optional[int] = None,
         trust_remote_code: Optional[bool] = False,
         tensor_parallel_size: Optional[int] = 1,
-        dtype: Optional[Union[str, torch.dtype]] = 'bfloat16',
+        dtype: Optional[Union[str, torch.dtype]] = 'float16',
     ):
         super().__init__()
         self._max_gen_toks = max_gen_toks
