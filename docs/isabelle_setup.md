@@ -132,3 +132,4 @@ python unsafe_score_minif2f_isabelle.py \
 ```
 Naturally, you will need to set these arguments to your own file paths.
 
+In some environments it may be necessary to prefix the command with `PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python`.

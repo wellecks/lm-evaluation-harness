@@ -5,8 +5,6 @@ import sys
 import os
 import time
 from tqdm import tqdm
-from contextlib import redirect_stdout
-from io import StringIO
 
 
 class Checker(object):
@@ -25,7 +23,8 @@ class Checker(object):
         try:
             from pisa_client import initialise_env
             self.initialise_env = initialise_env
-        except:
+        except Exception as e:
+            print(e)
             print("Set $PISA_PATH to /yourpath/to/Portal-to-ISAbelle/src/main/python")
 
         self.working_dir = working_dir
@@ -48,7 +47,7 @@ class Checker(object):
         except:
             print("env.post('exit') timed out")
             pass
-        os.system("ps aux | grep Isabelle | awk '{print $2}' | xargs kill -9 > /dev/null 2>&1")
+        os.system("ps aux | grep Isabelle2022/contrib | awk '{print $2}' | xargs kill -9 > /dev/null 2>&1")
         os.system("ps aux | grep poly | awk '{print $2}' | xargs kill -9 > /dev/null 2>&1")
 
     def _parse_output(self, obs):
