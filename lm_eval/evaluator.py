@@ -34,10 +34,6 @@ def simple_evaluate(
     accelerate_offload_folder="./offload",
     accelerate_dtype=None,
     tp_degree=1,
-    dtype="auto",
-    max_length=4096,
-    max_gen_toks=1024,
-    vllm_max_num_batched_tokens=4096,
 ):
 
     """Instantiate and evaluate a model on a list of tasks.
@@ -90,19 +86,12 @@ def simple_evaluate(
                 }
             )
         else:
-            args = {
-                "batch_size": batch_size,
-                "device": device,
-                "dtype": dtype,
-                "max_length": max_length,
-                "max_gen_toks": max_gen_toks,
-            }
-            if model == 'vllm':
-                args['max_num_batched_tokens'] = vllm_max_num_batched_tokens
-                args['tensor_parallel_size'] = tp_degree
-
             lm = lm_eval.models.get_model(model).create_from_arg_string(
-                model_args, args
+                model_args, {
+                    "batch_size": batch_size,
+                    "device": device,
+                    "tensor_parallel_size": tp_degree,
+                }
             )
     else:
         assert isinstance(model, lm_eval.base.LM)
