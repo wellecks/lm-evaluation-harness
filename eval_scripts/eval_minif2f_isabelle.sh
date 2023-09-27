@@ -10,7 +10,7 @@ BATCH_SIZE=1
 
 TASKS="minif2f_isabelle_informal2formal"
 
-python ${BASE_DIR}/main.py --description_dict_path ${BASE_DIR}/configs/config_minif2f_isabelle.json \
+python ${BASE_DIR}/main.py \
 	--model_args pretrained=${MODEL} \
 	--num_fewshot 0 \
 	--model vllm \
