@@ -48,8 +48,8 @@ for i in {0..2}; do
 #SBATCH --cpus-per-task=12          # Number of cores per tasks
 #SBATCH --mem-per-cpu=64G
 #SBATCH --gres=gpu:1                 # Number of gpus
-#SBATCH --output=slurmouts/7b_majk/${MODEL_NAME}_${TASK_NAME}_majk.out      # Set this dir where you want slurm outs to go
-#SBATCH --error=slurmouts/7b_majk/${MODEL_NAME}_${TASK_NAME}_majk.out      # Set this dir where you want slurm outs to go
+#SBATCH --output=slurmouts/7b_majk/${MODEL_NAME}_${TASK_NAME}_majk_%j.out      # Set this dir where you want slurm outs to go
+#SBATCH --error=slurmouts/7b_majk/${MODEL_NAME}_${TASK_NAME}_majk_%j.out      # Set this dir where you want slurm outs to go
 #SBATCH --account=neox
 #SBATCH --open-mode=append
 #SBATCH --requeue
