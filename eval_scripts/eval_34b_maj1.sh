@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --job-name=mathlm
-#SBATCH --array=2
+#SBATCH --array=1-2
 #SBATCH --partition=g40x
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=8          # Crucial - only 1 task per dist per node!
 #SBATCH --cpus-per-task=12          # Number of cores per tasks
 #SBATCH --gres=gpu:8                 # Number of gpus
-#SBATCH --output=34b_maj1_%A_%a.out      # Set this dir where you want slurm outs to go
-#SBATCH --error=34b_maj1_%A_%a.out      # Set this dir where you want slurm outs to go
+#SBATCH --output=slurmouts/34b_maj1/34b_maj1_%A_%a.out      # Set this dir where you want slurm outs to go
+#SBATCH --error=slurmouts/34b_maj1/34b_maj1_%A_%a.out      # Set this dir where you want slurm outs to go
 #SBATCH --account=neox
 #SBATCH --exclusive
 #SBATCH --open-mode=append
