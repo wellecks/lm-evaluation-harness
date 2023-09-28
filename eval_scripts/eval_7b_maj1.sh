@@ -15,14 +15,13 @@
 HARNESS_DIR=/fsx/proj-mathlm/lm-evaluation-harness-dev
 
 ### begin configure eval parameters
-profiles=("meta-llama" "codellama" "open-web-math") 
-endpoints=("Llama-2-7b-hf" "CodeLlama-7b-hf" "llemma_7b")
+models=("/fsx/proj-mathlm/downloaded-weights/Llama-2-7b-hf" "/fsx/proj-mathlm/downloaded-weights/CodeLlama-7b-hf" "/fsx/proj-mathlm/downloaded-weights/llemma_7b") 
+names=("llama-2_7b" "codellama_7b" "llemma_7b")
 
-PROFILE=${profiles[$SLURM_ARRAY_TASK_ID]}
-ENDPOINT=${endpoints[$SLURM_ARRAY_TASK_ID]}
+MODEL=${models[$SLURM_ARRAY_TASK_ID]}
+NAME=${names[$SLURM_ARRAY_TASK_ID]}
 
-MODEL=${PROFILE}/${ENDPOINT}
-OUT=${HARNESS_DIR}/output/${ENDPOINT}_maj1.json
+OUT=${HARNESS_DIR}/output/${NAME}_maj1.json
 
 TASKS=minerva_math*,gsm8k,ocw_courses,minerva-hendrycksTest*,math_sat_cot,sympy_math*,python_gsm8k
 
