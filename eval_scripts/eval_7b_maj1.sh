@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=mathlm
-#SBATCH --array=1-1
+#SBATCH --array=0-2
 #SBATCH --partition=g40x
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1          # Crucial - only 1 task per dist per node!
@@ -27,7 +27,7 @@ OUT=${HARNESS_DIR}/output/${ENDPOINT}_maj1.json
 TASKS=minerva_math*,gsm8k,ocw_courses,minerva-hendrycksTest*,math_sat_cot,sympy_math*,python_gsm8k
 
 # uncomment line below to run a subset of tasks, useful for testing.
-TASKS=minerva_math_prealgebra,gsm8k,ocw_courses,minerva-hendrycksTest-abstract_algebra,math_sat_cot,sympy_math_prealgebra,python_gsm8k
+# TASKS=minerva_math_prealgebra,gsm8k,ocw_courses,minerva-hendrycksTest-abstract_algebra,math_sat_cot,sympy_math_prealgebra,python_gsm8k
 
 cd ${HARNESS_DIR}
 mkdir -p ${HARNESS_DIR}/output
@@ -39,4 +39,5 @@ TP_DEGREE=1
 source ${HARNESS_DIR}/eval_scripts/env.sh
 ### end configure environment
 
-python main.py --no_cache --model vllm --model_args pretrained=${MODEL} --tasks $TASKS --output_path ${OUT} --tp_degree ${TP_DEGREE} --limit 10
+# if testing, uncomment --limit for testing
+python main.py --no_cache --model vllm --model_args pretrained=${MODEL} --tasks $TASKS --output_path ${OUT} --tp_degree ${TP_DEGREE} # --limit 10
