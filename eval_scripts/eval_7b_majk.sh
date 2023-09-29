@@ -22,9 +22,9 @@ tasks=("minerva_math_prealgebra"
        "minerva_math_counting_and_prob"
        "minerva_math_geometry"
        "minerva_math_precalc"
-       "gsm8k,ocw_courses"
-       "minerva-hendrycksTest*,math_sat_cot"
-       "sympy_math*,python_gsm8k")
+       "gsm8k"
+       "minerva-hendrycksTest*"
+       "ocw_courses")
 task_names=("prealgebra"
        "algebra"
        "intermediate_algebra"
@@ -32,9 +32,9 @@ task_names=("prealgebra"
        "counting_and_prob"
        "geometry"
        "precalc"
-       "rest_nl"
-       "mul_choice"
-       "tools")
+       "gsm"
+       "mmlu"
+       "ocw")
 
 
 MODEL="/fsx/proj-mathlm/downloaded-weights/llemma_7b"
