@@ -1,8 +1,8 @@
 module load openmpi cuda/11.8
 
-source /admin/home-hailey/miniconda3/bin/activate eval-vllm
+source /admin/home-hailey/miniconda3/bin/activate eval-vllm-new
 
-CONDA_HOME=/admin/home-hailey/miniconda3/envs/eval-vllm
+CONDA_HOME=/admin/home-hailey/miniconda3/envs/eval-vllm-new
 CUDNN_HOME=/fsx/hailey/cudnn-linux-x86_64-8.6.0.163_cuda11-archive
 
 export LD_LIBRARY_PATH=$CUDNN_HOME/lib:$LD_LIBRARY_PATH
