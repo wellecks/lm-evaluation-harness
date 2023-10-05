@@ -3,11 +3,11 @@
 #SBATCH --array=0-5
 #SBATCH --partition=g40x
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=2          # Crucial - only 1 task per dist per node!
-#SBATCH --cpus-per-task=36          # Number of cores per tasks
-#SBATCH --gres=gpu:2                 # Number of gpus
-#SBATCH --output=slurmouts/7b_majk/7b_majk_%A_%a.out      # Set this dir where you want slurm outs to go
-#SBATCH --error=slurmouts/7b_majk/7b_majk_%A_%a.out      # Set this dir where you want slurm outs to go
+#SBATCH --ntasks-per-node=8          # Crucial - only 1 task per dist per node!
+#SBATCH --cpus-per-task=12          # Number of cores per tasks
+#SBATCH --gres=gpu:8                 # Number of gpus
+#SBATCH --output=slurmouts/34b_majk/34b_majk_%A_%a.out      # Set this dir where you want slurm outs to go
+#SBATCH --error=slurmouts/34b_majk/34b_majk_%A_%a.out      # Set this dir where you want slurm outs to go
 #SBATCH --account=neox
 #SBATCH --open-mode=append
 #SBATCH --requeue
@@ -31,12 +31,12 @@ task_names=("minerva"
     )
 
 
-MODEL="/fsx/proj-mathlm/downloaded-weights/llemma_7b"
+MODEL="/fsx/proj-mathlm/downloaded-weights/llemma_34b"
 
 TASK=${tasks[$SLURM_ARRAY_TASK_ID]}
 TASK_NAME=${task_names[$SLURM_ARRAY_TASK_ID]}
 
-OUT=${HARNESS_DIR}/output/llema_7b_${TASK_NAME}_majk.json
+OUT=${HARNESS_DIR}/output/llema_34b_${TASK_NAME}_majk.json
 
 
 cd ${HARNESS_DIR}
