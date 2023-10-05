@@ -105,55 +105,58 @@ class SymbolicMathTask(SymbolicMathMixin, MajorityVotingMixin, Task, ABC):
         return False
 
     def process_results(self, doc, results, params={}):
+        """
+        Answer checking has been moved offline.
+        """
         candidates = results[0]
 
         assert isinstance(params, dict)
         
-        if self.MAJORITY_VOTING not in params:
-            unnormalized_answer = self.get_unnormalized_answer(candidates)
-            answer = self.normalize_tex(unnormalized_answer)
+        # if self.MAJORITY_VOTING not in params:
+        #     unnormalized_answer = self.get_unnormalized_answer(candidates)
+        #     answer = self.normalize_tex(unnormalized_answer)
 
-            if unnormalized_answer==self.INVALID_ANSWER:
-                acc = 0
-            elif self.is_tex_equiv(answer, doc['answer']):
-                acc = 1 
-            else: 
-                acc = 0 
+        #     if unnormalized_answer==self.INVALID_ANSWER:
+        #         acc = 0
+        #     elif self.is_tex_equiv(answer, doc['answer']):
+        #         acc = 1 
+        #     else: 
+        #         acc = 0 
 
-            pass_rate = acc
-        else:
-            answers = [
-                    self.normalize_tex(self.get_unnormalized_answer(candidate))
-                    for candidate in candidates
-                    if self.get_unnormalized_answer(candidate) != self.INVALID_ANSWER
-            ]
-            
-            acc, pass_rate, votes = self.majority_vote(
-                    answers,
-                    correct_answer=doc['answer'],
-                    is_equiv=self.is_tex_equiv,
-            )
-            if votes:
-                answer = votes[0][0]
-            else: 
-                answer = self.INVALID_ANSWER
+        #     pass_rate = acc
+        # else:
+        #     answers = [
+        #             self.normalize_tex(self.get_unnormalized_answer(candidate))
+        #             for candidate in candidates
+        #             if self.get_unnormalized_answer(candidate) != self.INVALID_ANSWER
+        #     ]
+        #     
+        #     acc, pass_rate, votes = self.majority_vote(
+        #             answers,
+        #             correct_answer=doc['answer'],
+        #             is_equiv=self.is_tex_equiv,
+        #     )
+        #     if votes:
+        #         answer = votes[0][0]
+        #     else: 
+        #         answer = self.INVALID_ANSWER
 
         results = {
-            "acc": acc,
-            "pass_rate": pass_rate,
+            # "acc": acc,
+            # "pass_rate": pass_rate,
             "metadata": {
                 "selected_answer": answer,
                 "unprocessed_answers": candidates,
             }
         }
 
-        if self.MAJORITY_VOTING in params:
-            results["metadata"]["votes"] = votes
+        # if self.MAJORITY_VOTING in params:
+        #     results["metadata"]["votes"] = votes
 
         return results
 
     def aggregation(self):
-        return {"acc": mean, "pass_rate": mean}
+        return {} # {"acc": mean, "pass_rate": mean}
 
     def higher_is_better(self):
-        return {"acc": True, "pass_rate": True}
+        return {} # {"acc": True, "pass_rate": True}
