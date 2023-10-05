@@ -14,7 +14,7 @@ class VLLM(BaseLM):
     AUTO_CONFIG_CLASS: transformers.AutoConfig = transformers.AutoConfig
     AUTO_MODEL_CLASS = transformers.AutoModelForCausalLM
     AUTO_TOKENIZER_CLASS: transformers.AutoTokenizer = transformers.AutoTokenizer
-    _DEFAULT_MAX_LENGTH: int = 2048
+    _DEFAULT_MAX_LENGTH: int = 4096
 
     def __init__(
         self,
@@ -42,7 +42,8 @@ class VLLM(BaseLM):
         )
         self.llm = LLM(model=pretrained, 
                        tensor_parallel_size=tensor_parallel_size,
-                       dtype=dtype)
+                       dtype=dtype,
+                       swap_space=64)
         self.tokenizer = self._create_auto_tokenizer(
             pretrained=pretrained,
             revision=revision,
