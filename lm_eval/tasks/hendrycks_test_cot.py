@@ -80,7 +80,7 @@ SUBJECTS_STEM = SUBJECTS_MCQA + SUBJECTS_CUSTOM
 
 MCQA_PROMPT = r"""Problem:
 Find the domain of the expression $\frac{\sqrt{x-2}}{\sqrt{5-x}}$.
-What of the following is the right choice? Explain you answer.
+What of the following is the right choice? Explain your answer.
 (A) [-5,-2), (B) [2,5), (C) [-2,-5), (D) [5,2)
 Solution:
 The expressions inside each square root must be non-negative. Therefore, $x-2 \ge 0$, so $x\ge2$, and $5 - x \
@@ -90,7 +90,7 @@ Final Answer: The final answer is (B). I hope it is correct.
 
 Problem:
 If $\det \mathbf{A} = 2$ and $\det \mathbf{B} = 12,$ then find $\det (\mathbf{A} \mathbf{B}).$
-What of the following is the right choice? Explain you answer.
+What of the following is the right choice? Explain your answer.
 (A) 14, (B) 4, (C) 2, (D) 24
 Solution:
 We have that $\det (\mathbf{A} \mathbf{B}) = (\det \mathbf{A})(\det \mathbf{B}) = (2)(12) = \boxed{24}.$
@@ -99,7 +99,7 @@ Final Answer: The final answer is (D). I hope it is correct.
 Problem:
 Terrell usually lifts two 20-pound weights 12 times. If he uses two 15-pound weights instead, how many times \
 must Terrell lift them in order to lift the same total weight?
-What of the following is the right choice? Explain you answer.
+What of the following is the right choice? Explain your answer.
 (A) 12, (B) 20, (C) 16, (D) 15
 Solution:
 If Terrell lifts two 20-pound weights 12 times, he lifts a total of $2\cdot 12\cdot20=480$ pounds of weight. \
@@ -118,7 +118,7 @@ If the system of equations
 6y-9x &=b.
 \end{align*}has a solution $(x, y)$ where $x$ and $y$ are both nonzero, find $\frac{a}{b},$ assuming $b$ is
 nonzero.
-What of the following is the right choice? Explain you answer.
+What of the following is the right choice? Explain your answer.
 (A) $-\frac{2}{3}$, (B) $\frac{2}{3}$, (C) $\frac{1}{3}$, (D) $\frac{4}{9}$
 Solution:
 If we multiply the first equation by $-\frac{3}{2}$, we obtain
@@ -176,11 +176,11 @@ class MinervaCoTMMLU(MajorityVotingMixin, Task):
         def format_example(doc, keys):
             """
             Problem: <prompt>
-            What of the following is the right choice? Explain you answer.
+            What of the following is the right choice? Explain your answer.
             (A) <choice1>, (B) <choice2>, (C) <choice3>, (D) <choice4>
             Solution:
             """
-            prompt = MCQA_PROMPT + "\n\n" + "Problem:\n" + doc["question"] + "\nWhat of the following is the right choice? Explain you answer.\n"
+            prompt = MCQA_PROMPT + "\n\n" + "Problem:\n" + doc["question"] + "\nWhat of the following is the right choice? Explain your answer.\n"
             prompt += ", ".join(
                 [f"{key} {choice}" for key, choice in zip(keys, doc["choices"])]
             )
@@ -229,7 +229,7 @@ class MinervaCoTMMLU(MajorityVotingMixin, Task):
             pass_rate = acc
         elif self.MAJORITY_VOTING in params:
             acc, pass_rate, votes = self.majority_vote(
-                    [self._extract_answer(c) for c in candidates if c!=self.INVALID_ANS],
+                    [self._extract_answer(c) for c in candidates if self._extract_answer(c)!=self.INVALID_ANS],
                     correct_answer=doc['gold'],
                     # is_equiv=self._is_correct, this line commented out since is_equiv assumed to be symmetric
             )
