@@ -20,7 +20,7 @@ rexp = re.compile(r'Final Answer: The final answer is(.*?). I hope it is correct
 def get_unnormalized_answer(text: str):
     text += "I hope it is correct."
     match = rexp.search(text)
-    if match: 
+    if match:       
         return match.group(1).strip()
     else:
         return INVALID_ANSWER
@@ -49,7 +49,7 @@ def main(args):
         pass_rates = []
         for i, doc in enumerate(tqdm(docs[:limit])):
             
-            candidates = doc['metadata']['candidates']
+            candidates = doc['metadata']['unprocessed_answers']
 
 
             is_majority_voting = not isinstance(candidates, str)
@@ -71,12 +71,13 @@ def main(args):
                         checker.normalize_tex(get_unnormalized_answer(candidate))
                         for candidate in candidates
                 ]
-                answers = [candidate for candidate in candidates if candidate!=INVALID_ANSWER]
-                     
+                # answers = [answer for answer in answers if answer!=INVALID_ANSWER]
+                
                 acc, pass_rate, votes = voter.majority_vote(
                         answers,
                         correct_answer=doc['answer'],
                         is_equiv=checker.is_tex_equiv,
+                        invalid_answer=INVALID_ANSWER,
                 )
                 if votes:
                     answer = votes[0][0]
