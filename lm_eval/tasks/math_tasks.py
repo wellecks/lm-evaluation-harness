@@ -145,7 +145,7 @@ class SymbolicMathTask(SymbolicMathMixin, MajorityVotingMixin, Task, ABC):
             # "acc": acc,
             # "pass_rate": pass_rate,
             "metadata": {
-                "selected_answer": answer,
+                "selected_answer": None, #answer,
                 "unprocessed_answers": candidates,
             }
         }
