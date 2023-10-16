@@ -71,12 +71,12 @@ def main(args):
                         checker.normalize_tex(get_unnormalized_answer(candidate))
                         for candidate in candidates
                 ]
-                answers = [candidate for candidate in candidates if candidate!=INVALID_ANSWER]
                      
                 acc, pass_rate, votes = voter.majority_vote(
                         answers,
                         correct_answer=doc['answer'],
                         is_equiv=checker.is_tex_equiv,
+                        invalid_answer=INVALID_ANSWER,
                 )
                 if votes:
                     answer = votes[0][0]
@@ -111,9 +111,9 @@ if __name__=="__main__":
             "USE WITH CAUTION."
     )
 
-    parser = argparse.ArgumentParser("Unsafe script for scoring the sympy_math tasks")
+    parser = argparse.ArgumentParser("Unsafe script for scoring the minerva_math tasks")
 
-    parser.add_argument("--output", type=str, help="path to output file from running sympy math tasks")
+    parser.add_argument("--output", type=str, help="path to output file from running minerva math tasks")
     parser.add_argument("--limit", type=int, default=None, help="for debugging purposes, max examples per task to process")
 
     args = parser.parse_args()
