@@ -159,9 +159,10 @@ class MathSATCoT(MajorityVotingMixin, Task):
             pass_rate = acc
         elif self.MAJORITY_VOTING in params:
             acc, pass_rate, votes = self.majority_vote(
-                    [self._extract_answer(c) for c in candidates if self._extract_answer(c)!=self.INVALID_ANS],
+                    [self._extract_answer(c) for c in candidates],
                     correct_answer=doc['gold'],
                     # is_equiv=self._is_correct, this line commented out since is_equiv assumed to be symmetric
+                    invalid_answer=self.INVALID_ANS,                
             )
             if votes:
                 completion = votes[0][0]
