@@ -223,17 +223,18 @@ class SymbolicMathMixin:
 
         return final_answer
 
-    def parse_tex(self, text: str) -> sympy.Basic:
+    def parse_tex(self, text: str, time_limit: int = 5) -> sympy.Basic:
         """
         Wrapper around `sympy.parse_text` that outputs a SymPy expression.
         Typically, you want to apply `normalize_text` as a preprocessing step.
         """
         try:
-            parsed = parse_latex(text)
+            with timeout(seconds=time_limit):
+                parsed = parse_latex(text)
         except (
-            sympy.parsing.latex.errors.LaTeXParsingError,
-            SympifyError,
-            TypeError,
+            # general error handling: there is a long tail of possible sympy/other 
+            # errors we would like to catch
+            Exception
         ) as e:
             print(f"failed to parse {text} with exception {e}")
             return None
