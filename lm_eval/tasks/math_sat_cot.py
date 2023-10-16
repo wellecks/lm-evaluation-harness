@@ -1,14 +1,9 @@
 """
-Solving Quantitative Reasoning Problems with Language Models
-https://arxiv.org/pdf/2206.14858.pdf
+SAT Math May 2023 questions that do not have figures.
 
-Minerva CoT version of MMLU-STEM.  See Appendix G for prompt reference. 
+We use the version of the dataset found in the Huggingface dataset `mcaleste/sat_multiple_choice_math_may_23`.
 
-`SUBJECTS_MCQA` consists of those subsets (STEM subsets that "use equations") for which the few-shot prompt is Listing 5 from the 
-Minerva Appendix G. SUBJECTS_CUSTOM use a special subject-specific prompt, which are listed as being in the supplementary material but 
-do not appear to be included in the current downloadable zip.
-
-
+Our prompt is taken from from appendix G of Lewkowycz et al. (2022). 
 """
 
 from lm_eval.base import Task, rf
@@ -30,10 +25,9 @@ _CITATION = """
 
 
 
-MCQA_PROMPT = """\
-Problem:
+MCQA_PROMPT = r"""Problem:
 Find the domain of the expression $\frac{\sqrt{x-2}}{\sqrt{5-x}}$.
-What of the following is the right choice? Explain you answer.
+What of the following is the right choice? Explain your answer.
 (A) [-5,-2), (B) [2,5), (C) [-2,-5), (D) [5,2)
 Solution:
 The expressions inside each square root must be non-negative. Therefore, $x-2 \ge 0$, so $x\ge2$, and $5 - x \
@@ -43,7 +37,7 @@ Final Answer: The final answer is (B). I hope it is correct.
 
 Problem:
 If $\det \mathbf{A} = 2$ and $\det \mathbf{B} = 12,$ then find $\det (\mathbf{A} \mathbf{B}).$
-What of the following is the right choice? Explain you answer.
+What of the following is the right choice? Explain your answer.
 (A) 14, (B) 4, (C) 2, (D) 24
 Solution:
 We have that $\det (\mathbf{A} \mathbf{B}) = (\det \mathbf{A})(\det \mathbf{B}) = (2)(12) = \boxed{24}.$
@@ -52,7 +46,7 @@ Final Answer: The final answer is (D). I hope it is correct.
 Problem:
 Terrell usually lifts two 20-pound weights 12 times. If he uses two 15-pound weights instead, how many times \
 must Terrell lift them in order to lift the same total weight?
-What of the following is the right choice? Explain you answer.
+What of the following is the right choice? Explain your answer.
 (A) 12, (B) 20, (C) 16, (D) 15
 Solution:
 If Terrell lifts two 20-pound weights 12 times, he lifts a total of $2\cdot 12\cdot20=480$ pounds of weight. \
@@ -71,27 +65,26 @@ If the system of equations
 6y-9x &=b.
 \end{align*}has a solution $(x, y)$ where $x$ and $y$ are both nonzero, find $\frac{a}{b},$ assuming $b$ is
 nonzero.
-What of the following is the right choice? Explain you answer.
+What of the following is the right choice? Explain your answer.
 (A) $-\frac{2}{3}$, (B) $\frac{2}{3}$, (C) $\frac{1}{3}$, (D) $\frac{4}{9}$
 Solution:
 If we multiply the first equation by $-\frac{3}{2}$, we obtain
 $$6y-9x=-\frac{3}{2}a.$$Since we also know that $6y-9x=b$, we have
 
 $$-\frac{3}{2}a=b\Rightarrow\frac{a}{b}=\boxed{-\frac{2}{3}}.$$
-Final Answer: The final answer is (A). I hope it is correct.
-"""
+Final Answer: The final answer is (A). I hope it is correct."""
 
 
-class MinervaCoTMMLU(MajorityVotingMixin, Task):
+class MathSATCoT(MajorityVotingMixin, Task):
     VERSION = 0
     DATASET_PATH = "mcaleste/sat_multiple_choice_math_may_23"
     DATASET_NAME = None
 
-    ANS_RE = re.compile(r"Final Answer: The final answer is \([ABCD]\). I hope it is correct.")
+    ANS_RE = re.compile(r"Final Answer: The final answer is \([ABCD]\).")
     INVALID_ANS = "[not found]"
 
     def __init__(self):
-        print("test")
+        print("WARNING: math_sat_cot ignores --num-fewshot argument and uses a fixed prompt")
         super().__init__()
 
     def has_training_docs(self):
@@ -108,6 +101,11 @@ class MinervaCoTMMLU(MajorityVotingMixin, Task):
 
     def test_docs(self):
         return map(self._process_doc, self.dataset["train"])
+    
+    def fewshot_context(
+            self, doc, num_fewshot, provide_description=None, rnd=None, description=None
+    ):
+        return doc["query"]
 
     def _process_doc(self, doc):
         def format_example(doc, keys):
@@ -117,10 +115,10 @@ class MinervaCoTMMLU(MajorityVotingMixin, Task):
             (A) <choice1>, (B) <choice2>, (C) <choice3>, (D) <choice4>
             Solution:
             """
-            prompt = MCQA_PROMPT + "\n\n" + "Problem: " + doc["Question"] + "\nWhat of the following is the right choice? Explain you answer.\n"
-            prompt += ", ".join(
-                [f"{key} {choice}" for key, choice in zip(keys, doc["Possible Answers"])]
-            )
+            prompt = MCQA_PROMPT + "\n\n" + "Problem:\n" + doc["Question"] + "\nWhat of the following is the right choice? Explain your answer.\n"
+            prompt += doc["Possible Answers"]
+ #                 [f"{key} {choice}" for key, choice in zip(keys, doc["Possible Answers"])]
+ #            )
             prompt += "\nSolution:"
             return prompt
         
@@ -136,18 +134,10 @@ class MinervaCoTMMLU(MajorityVotingMixin, Task):
 
     @property
     def end_seq(self):
-        return ["\n\n", "Problem:"]
+        # return ["\n\n", "Problem:"]
+        return ["I hope it is correct."]
 
     def process_results(self, doc, results, params={}):
-        """Take a single document and the LM results and evaluates, returning a
-        dict where keys are the names of submetrics and values are the values of
-        the metric for that one document
-
-        :param doc:
-            The document as returned from training_docs, validation_docs, or test_docs.
-        :param results:
-            The results of the requests created in construct_requests.
-        """
         candidates = results[0]
         assert isinstance(params, dict)
         if params == {}:
@@ -200,9 +190,7 @@ class MinervaCoTMMLU(MajorityVotingMixin, Task):
         # fewshot_examples is not just sampling from train_docs because dev is
         # in the same distribution as val/test but auxiliary_train isn't
 
-        assert k == 0, "Custom Minerva MMLU prompt hardcodes fewshot context! Must use num_fewshot=0 here"
-        return None
-
+        raise NotImplementedError
     def doc_to_text(self, doc):
         return doc["query"]
 

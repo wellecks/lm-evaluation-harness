@@ -41,6 +41,7 @@ from . import hendrycks_test
 from . import hendrycks_math
 from . import hendrycks_math_ppl
 from . import minerva_math
+from . import ocw_courses
 from . import sympy_math
 from . import cbt
 from . import lambada_cloze
@@ -62,6 +63,7 @@ from . import hendrycks_test_cot
 from . import math_sat_cot
 from . import identify_math_theorems
 from . import minif2f_isabelle
+from . import python_gsm
 
 ########################################
 # Translation tasks
@@ -192,6 +194,7 @@ TASK_REGISTRY = {
     "minerva_math_num_theory": minerva_math.MinervaMathNumberTheory,
     "minerva_math_prealgebra": minerva_math.MinervaMathPrealgebra,
     "minerva_math_precalc": minerva_math.MinervaMathPrecalculus,
+    "ocw_courses": ocw_courses.OCWCourses,
     "sympy_math_algebra_easy": sympy_math.SympyMathAlgebraEasy,
     "sympy_math_algebra": sympy_math.SympyMathAlgebra,
     "sympy_math_algebra_easy": sympy_math.SympyMathAlgebraEasy,
@@ -400,8 +403,9 @@ TASK_REGISTRY = {
     "minif2f_isabelle_informal2formal": minif2f_isabelle.MiniF2FIsabelle,
     #
     **hendrycks_test_cot.create_all_mcqa_tasks(),
-    "math_sat_cot": math_sat_cot.MinervaCoTMMLU,
+    "math_sat_cot": math_sat_cot.MathSATCoT,
     "identify_math_theorems": identify_math_theorems.IdentifyMathThms,
+    "python_gsm8k": python_gsm.PythonGSM8k,
     #
     # Requires manual download of data.
     # "storycloze_2016": storycloze.StoryCloze2016,
