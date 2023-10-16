@@ -273,8 +273,21 @@ class SymbolicMathMixin:
     def is_tex_equiv(self, x1: str, x2: str, time_limit=5) -> bool:
         """
         Determines whether two (ideally normalized using `normalize_text`) TeX expressions are equal.
+
+        Does so by first checking for string exact-match, then falls back on sympy-equivalence,
+        following the (Lewkowycz et al. 2022) methodology.
         """
-        return self.is_exp_equiv(self.parse_tex(x1), self.parse_tex(x2), time_limit=time_limit)
+        if x1 == x2:
+            # don't resort to sympy if we have full string match, post-normalization 
+            return True
+        else: 
+            return False
+        parsed_x2 = self.parse_tex(x2)
+        if not parsed_x2:
+            # if our reference fails to parse into a Sympy object, 
+            # we forgo parsing + checking our generated answer.
+            return False
+        return self.is_exp_equiv(self.parse_tex(x1), parsed_x2, time_limit=time_limit)
 
 
 class MammothTemplateMixin:
