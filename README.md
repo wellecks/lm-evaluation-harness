@@ -3,9 +3,135 @@
 This section contains documentation related to changes/additions made to the lm-evaluation-harness.
 The original readme for the evaluation harness is in the subsequent section.
  
-## Example scripts
+This fork contains code to replicate the evaluations as performed in the Llemma paper. If you use the evaluation implementations in this paper, including the newly introduced SAT evaluation, please cite 
 
-See `eval_scripts` for example scripts. We will walk through a simple case: 
+
+```bibtex
+
+```
+
+As well as the corresponding papers for the benchmarks used, which can be found in the implementation files.
+
+
+## Tasks Supported
+
+Below, we detail all evaluations implemented and reported in our paper. 
+
+* `math_sat_cot`: A small test set of SAT questions from the May 2023 College Board SAT examination, which occurred after the knowledge cutoff for Llemma's training set. Evaluated via chain-of-thought in natural language. 
+* `hendrycks_math_ppl`: Perplexity evaluation on reference answers of sub-tasks of the [MATH dataset](https://arxiv.org/abs/2103.03874).
+* `minif2f_isabelle`: Proof autoformalization in Isabelle on the miniF2F benchmark based on [Draft-Sketch-Prove](https://arxiv.org/abs/2210.12283), with a [Portal-to-Isabelle](https://github.com/albertqjiang/Portal-to-ISAbelle/tree/main) proof checker.
+* `minerva_math*`: The MATH benchmark with the prompt and Sympy evaluation from [Minerva](https://arxiv.org/abs/2206.14858).
+* `minerva-hendrycksTest*`: MMLU-STEM tasks with prompting and chain-of-thought, following [Minerva](https://arxiv.org/abs/2206.14858).
+* `ocw_courses`: The OCW Courses task from [Minerva](https://arxiv.org/abs/2206.14858).
+* `python_gsm8k`: GSM8k solved by writing Python programs that return the numeric answer, based on [PAL](https://arxiv.org/abs/2211.10435).
+* `sympy_math`: MATH evaluation, with Sympy or Python `math` modules used to write a programmatic solution.
+
+We additionally implement the following tasks in this fork, though we do not report them in our paper due to time+space limitations:
+
+* `lila_*` - Evaluation on the [Lila dataset](https://arxiv.org/abs/2210.17517). Note that **this requires executing model-generated code**.
+* `proofnet*` - Evaluation on the [ProofNet dataset](https://arxiv.org/abs/2302.12433) for both auto- and in- formalization. Informalization requires GPT-3.5 evaluation and an OpenAI API key.
+
+
+
+# Quick Replication Instructions
+
+
+## Maj@1 
+
+To run the model on desired tasks with 1 attempt, run the following sample command with your model.
+
+```
+MODEL=EleutherAI/llemma_7b # your HF Hub model path here
+TASK=minerva_math* # select tasks as desired. This codebase supports wildcard task names.
+OUT=</path/to/save/outputs>
+
+python main.py --no_cache --model vllm --model_args pretrained=${MODEL} --tasks $TASK --output_path ${OUT} --tp_degree ${TP_DEGREE}
+```
+
+## Maj@K
+
+To replicate Maj@K task results, additionally pass `--description_dict_path configs/majk.json` to run majority voting with K attempts. 
+
+```
+MODEL=EleutherAI/llemma_7b # your HF Hub model path here
+TASK=minerva_math* # select tasks as desired. This codebase supports wildcard task names.
+OUT=</path/to/save/outputs>
+
+python main.py --no_cache --model vllm --model_args pretrained=${MODEL} --tasks $TASK --output_path ${OUT} --tp_degree ${TP_DEGREE} --description_dict_path ${HARNESS_DIR}/configs/majk.json
+```
+
+
+`TP_DEGREE` can be set as needed to determine how many GPUs will be used by vLLM. 
+
+Be sure to set $OUT to the desired save location for scores and model output text.
+
+
+## Answer Checking + Scoring
+
+Due to heavy CPU burden, we do not calculate metrics for tasks like `minerva_math` that rely on checking correctness via SymPy equivalence, or tasks like `sympy_math` or `python_gsm` that require execution of model-generated Python code. 
+
+After running the model on one of these tasks, we provide utilities to perform answer checking.
+
+
+Note that SymPy answer checking can be quite heavy on CPU resources and time-consuming for Maj@K at high K. 
+
+
+:rotating_light: **WARNING: `unsafe_score_sympy_math.py` and `unsafe_score_python_gsm.py` will execute model-written Python code! Please use in a sandbox and at your own risk**.
+
+:rotating_light: **WARNING: scoring scripts modify eval-harness output JSONs in-place. Back up your results files and use with caution!**
+
+To score `sympy_math` outputs, run:
+
+```
+python unsafe_score_sympy_math.py --output <path-to-results-with-sympy_math>
+```
+
+To score `python_gsm8k` outputs, run
+
+```
+python unsafe_score_python_gsm.py --output <path-to-results-with-python_gsm8k>
+```
+
+These scripts will take in a results file, read in the LM's generated programs, and execute them to check for correctness. It will then incorporate the per-sample and full-task accuracies into the results file and rewrite the entire file with these values added.
+
+All scripts allow for a `--limit X` flag to be passed to only score the first X documents.
+
+**Due to the high resource cost of scoring MATH with SymPy, `unsafe_score_minerva_math.py` has additional requirements**.
+
+To run Sympy scoring using multiprocessing, run
+
+```
+python unsafe_score_minerva_math.py --output <path-to-math-result.json>
+```
+
+To run in a single process, run 
+```
+python unsafe_score_minerva_math.py --output <path-to-math-result.json> --no_multiprocessing
+```
+
+Additionally, **MATH scoring with SymPy is resumable**--results and pass rates / accuracies for each document are saved to the results file in-place. *by default, the script will not rescore already-scored documents*.
+
+## Aggregation
+
+Finally, we provide utilities for aggregating MMLU and MATH scores across subtasks, aggregating at the sample level rather than the subset level. 
+
+To aggregate MMLU-STEM scores, run:
+
+```
+python score_mmlu.py <path-to-mmlu-results.json> 
+```
+
+To aggregate MATH scores, run:
+
+```
+python score_math.py <path-to-math-subtask-1.json>,<path-to-math-subtask-2-and-3.json>,...
+```
+
+
+
+## Further Documentation
+
+See `eval_scripts` for example scripts, including slurm scripts we used (only included for referencing). We will walk through a simple case: 
 
 ### LILA with Huggingface accelerate
 Example command to evaluate Pythia-1.4b-deduped on the `lila_addsub` task:
@@ -31,11 +157,6 @@ python ${BASE_DIR}/main.py --model_args pretrained=${MODEL} \
 	--tasks ${TASKS} \
 	--output_path ${OUTPUT_DIR}/${NAME}.json \
 	--batch_size ${BATCH_SIZE} 
-```
-
-You can see a full example script at:
-```bash
-bash eval_scripts/eval_lila_accelerate.sh
 ```
 
 **NOTE:** the `--accelerate_dtype float32` flag is needed to match the performance of the non-`accelerate` code.
@@ -95,6 +216,10 @@ python main.py \
 NOTE: With default settings, `--model hf-causal` may have different performance than `--model gpt2`. One known discrepancy is that `hf-causal` may use `float16` by default, while `--model gpt2` uses `float32`. Add the command-line argument `--accelerate_dtype float32` to prevent this discrepancy.
 
 NOTE: we do not yet support `hf-seq2seq`.
+
+## vLLM support
+
+This fork supports vLLM for fast and optionally tensor-parallel inference. (Which can be controlled by passing `--model vllm` and `--tp_degree ${TP_DEGREE}`). For more information, including a list of supported models, see https://github.com/vllm-project/vllm . 
 
 ## Experimental gpt-based evaluation for ProofNet informalization
 The ProofNet informalization task (`proofnet_informalize_statements`) consists of mapping a formal theorem statement to an informal statement.
