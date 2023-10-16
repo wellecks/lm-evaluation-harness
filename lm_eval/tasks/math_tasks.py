@@ -112,6 +112,9 @@ class SymbolicMathTask(SymbolicMathMixin, MajorityVotingMixin, Task, ABC):
 
         assert isinstance(params, dict)
         
+        ### NOTE: answer scoring (sympy/equivalence checking) has been moved offline. ###
+        ### to use scoring online, uncomment all commented code in this method. ###
+
         # if self.MAJORITY_VOTING not in params:
         #     unnormalized_answer = self.get_unnormalized_answer(candidates)
         #     answer = self.normalize_tex(unnormalized_answer)
@@ -145,7 +148,7 @@ class SymbolicMathTask(SymbolicMathMixin, MajorityVotingMixin, Task, ABC):
             # "acc": acc,
             # "pass_rate": pass_rate,
             "metadata": {
-                "selected_answer": answer,
+                "selected_answer": None, # set to `answer` if running scoring online
                 "unprocessed_answers": candidates,
             }
         }
