@@ -35,7 +35,8 @@ class MajorityVotingMixin:
             self,
             sampled_answers: List[T],
             correct_answer: T,
-            is_equiv : Callable[[T, T], bool] = lambda x, y: x==y
+            is_equiv : Callable[[T, T], bool] = lambda x, y: x==y,
+            invalid_answer: T = None
     ):
         """
         Performs majority voting on a list of candidate answers. 
@@ -47,6 +48,9 @@ class MajorityVotingMixin:
             correct_answer: T, ground truth.
             is_equiv: Callable[[T, T], bool], a function that determines when two answers 
                 should be treated as equivalent. Default is T-equivalence, i.e `lambda x y: x==y`.
+            invalid_answer: T, answer that corresponds to a parsing failure from a sample. 
+                If passed as arg, no votes for invalid answer should be counted, but it should
+                count against pass_rate.
         Returns:
             acc: int, 0/1 for correct/incorrect
             pass_rate: float, proportion of `sampled_answers` equivalent to `correct_answer`
@@ -57,7 +61,17 @@ class MajorityVotingMixin:
             return 0, 0, []
 
         answer_votes = {}
-        for answer in sampled_answers:
+
+        # we only count votes for successfully parsed answers, as we choose not
+        # to allow a model to vote for [invalidanswer] as its response.
+        # however, we do want to calculate pass_rate as a function of 
+        # total K = *num. sampled answers*.
+        if invalid_answer:
+            valid_sampled_answers = [answer for answer in sampled_answers if answer != invalid_answer]
+        else:
+            valid_sampled_answers = sampled_answers
+
+        for answer in valid_sampled_answers:
             if answer in answer_votes: 
                 answer_votes[answer] += 1
             else:
@@ -209,17 +223,18 @@ class SymbolicMathMixin:
 
         return final_answer
 
-    def parse_tex(self, text: str) -> sympy.Basic:
+    def parse_tex(self, text: str, time_limit: int = 5) -> sympy.Basic:
         """
         Wrapper around `sympy.parse_text` that outputs a SymPy expression.
         Typically, you want to apply `normalize_text` as a preprocessing step.
         """
         try:
-            parsed = parse_latex(text)
+            with timeout(seconds=time_limit):
+                parsed = parse_latex(text)
         except (
-            sympy.parsing.latex.errors.LaTeXParsingError,
-            SympifyError,
-            TypeError,
+            # general error handling: there is a long tail of possible sympy/other 
+            # errors we would like to catch
+            Exception
         ) as e:
             print(f"failed to parse {text} with exception {e}")
             return None
@@ -258,8 +273,21 @@ class SymbolicMathMixin:
     def is_tex_equiv(self, x1: str, x2: str, time_limit=5) -> bool:
         """
         Determines whether two (ideally normalized using `normalize_text`) TeX expressions are equal.
+
+        Does so by first checking for string exact-match, then falls back on sympy-equivalence,
+        following the (Lewkowycz et al. 2022) methodology.
         """
-        return self.is_exp_equiv(self.parse_tex(x1), self.parse_tex(x2), time_limit=time_limit)
+        if x1 == x2:
+            # don't resort to sympy if we have full string match, post-normalization 
+            return True
+        else: 
+            return False
+        parsed_x2 = self.parse_tex(x2)
+        if not parsed_x2:
+            # if our reference fails to parse into a Sympy object, 
+            # we forgo parsing + checking our generated answer.
+            return False
+        return self.is_exp_equiv(self.parse_tex(x1), parsed_x2, time_limit=time_limit)
 
 
 class MammothTemplateMixin:
