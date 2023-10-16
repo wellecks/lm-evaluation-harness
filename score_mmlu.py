@@ -1,7 +1,14 @@
 import sys
 import json
 
+"""
+Tiny helper script for scoring MMLU-STEM. Aggregates at the document, not subject, level.
+
+Pass in a path to a file that contains MMLU-STEM score results.
+"""
+
 path = sys.argv[1]
+print("Results filepaths received:" path)
 
 with open(path) as f:
     out = json.load(f)
