@@ -280,8 +280,7 @@ class SymbolicMathMixin:
         if x1 == x2:
             # don't resort to sympy if we have full string match, post-normalization 
             return True
-        else: 
-            return False
+
         parsed_x2 = self.parse_tex(x2)
         if not parsed_x2:
             # if our reference fails to parse into a Sympy object, 
